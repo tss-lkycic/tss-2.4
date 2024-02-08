@@ -1,19 +1,26 @@
-import Image from "next/image";
-import React from "react";
-import Chat from "./components/Chat";
+"use client";
 
-export default function Home() {
-  const API_KEY = process.env.REACT_APP_OPEN_API_KEY;
+import { useChat } from "ai/react";
 
+export default function Chat() {
+  const { messages, input, handleInputChange, handleSubmit } = useChat();
   return (
-    <div className="App">
-      <header className="App-header">
-        {/* align center */}
-        <h1 style={{ textAlign: "center" }}>React Chatbot</h1>
-      </header>
-      <main>
-        <Chat />
-      </main>
+    <div className="flex flex-col text-white w-full max-w-md py-24 mx-auto stretch">
+      {messages.map((m) => (
+        <div key={m.id} className="whitespace-pre-wrap">
+          {m.role === "user" ? "User: " : "AI: "}
+          {m.content}
+        </div>
+      ))}
+
+      <form onSubmit={handleSubmit}>
+        <input
+          className="fixed bottom-0 w-full max-w-md p-2 mb-8 border border-gray-300 rounded shadow-xl"
+          value={input}
+          placeholder="Say something..."
+          onChange={handleInputChange}
+        />
+      </form>
     </div>
   );
 }

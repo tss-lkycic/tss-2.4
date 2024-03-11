@@ -59,7 +59,7 @@ export default function Chat() {
         console.log("This is the latest response:", response);
         fetchData(response);
       }
-    }, 500); // Adjust the delay time as needed
+    }, 3000); // Adjust the delay time as needed
 
     // Cleanup the timeout if response changes before the delay ends
     return () => clearTimeout(timeout);

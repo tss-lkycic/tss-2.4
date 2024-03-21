@@ -2,6 +2,7 @@
 
 import { useChat } from "ai/react";
 import logo from "/public/logo.svg";
+import new_logo from "/public/new_logo.svg";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import OpenAI from "openai";
@@ -15,7 +16,9 @@ export default function Chat() {
   const [queryText, setQueryText] = useState(true);
   const [queryPDF, setQueryPDF] = useState(false);
   const [queryJob, setQueryJob] = useState(false);
+  const [queryHobbies, setQueryHobbies] = useState(false);
   const [job, setJob] = useState("");
+  const [hobbies, setHobbies] = useState("");
   const [text, setText] = useState("");
   const [response, setResponse] = useState([]);
   const [IWAs, setIWAs] = useState([]);
@@ -85,21 +88,31 @@ export default function Chat() {
       setQueryText(false);
       setQueryPDF(false);
       setQueryJob(false);
+      setQueryHobbies(false);
     } else if (value === "Text") {
       setQueryURl(false);
       setQueryText(true);
       setQueryPDF(false);
       setQueryJob(false);
+      setQueryHobbies(false);
     } else if (value === "PDF") {
       setQueryURl(false);
       setQueryText(false);
       setQueryPDF(true);
       setQueryJob(false);
+      setQueryHobbies(false);
     } else if (value === "Job") {
       setQueryURl(false);
       setQueryText(false);
       setQueryPDF(false);
       setQueryJob(true);
+      setQueryHobbies(false);
+    } else if (value === "Hobbies") {
+      setQueryURl(false);
+      setQueryText(false);
+      setQueryPDF(false);
+      setQueryJob(false);
+      setQueryHobbies(true);
     }
   }
 
@@ -111,6 +124,11 @@ export default function Chat() {
   function handleTextChange(e) {
     const textContent = e.target.value;
     setText(textContent);
+  }
+
+  function handleHobbiesChange(e) {
+    const hobbiesContent = e.target.value;
+    setText(hobbiesContent);
   }
   function handleURLChange(e) {
     const urlLink = e.target.value;
@@ -201,66 +219,96 @@ export default function Chat() {
   }
 
   return (
-    <div className="bg-gradient-to-b from-[#464444] to-black w-screen h-screen flex flex-col">
-      <Image src={logo} width={60} alt="Logo" className="m-5"></Image>
-      <div className="flex flex-row w-full h-full">
+    <div className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll">
+      <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
+        <Image src={new_logo} width={40} alt="Logo" className="text-lg"></Image>
+        <p className="ml-2 text-xl">S T A K</p>
+      </div>
+
+      <div className="flex flex-row w-full h-full text-[#555555]">
         <div className="flex flex-col w-1/2 h-full">
-          <h3 className="pl-5 pt-10 font-semibold">Select type</h3>
-          <div className="p-5">
+          <div className="pl-10 pt-10 w-1/2">
+            <div className="flex flex-row items-center py-2 font-medium">
+              <Image
+                src={new_logo}
+                width={40}
+                alt="Logo"
+                className="text-lg"
+              ></Image>
+              <h3 className="ml-5 text-xl">Task Translator</h3>
+            </div>{" "}
+            <p className="text-xs">
+              Task Translator explanation. Lorem ipsum dolor sit amet,
+              consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+              labore et dolore magna aliqua.
+            </p>
+          </div>
+          <div className="pl-10 pt-10 pb-5 flex justify-between">
             <button
               className={` pr-2 ${
-                queryText ? "text-xl text-white" : "text-md text-gray-400"
+                queryText ? "text-xl text-[#555555]" : "text-md text-gray-400"
               }`}
               onClick={() => handleSelectItem("Text")}
             >
-              Text
+              Paste Text
             </button>
             |
             <button
               className={` px-2 ${
-                queryURL ? "text-xl text-white" : "text-md text-gray-400"
+                queryURL ? "text-xl text-[#555555]" : "text-md text-gray-400"
               }`}
               onClick={() => handleSelectItem("URL")}
             >
-              URL
+              Link URL
             </button>
             |
             <button
               className={` px-2 ${
-                queryPDF ? "text-xl text-white" : "text-md text-gray-400"
+                queryPDF ? "text-xl text-[#555555]" : "text-md text-gray-400"
               }`}
               onClick={() => handleSelectItem("PDF")}
             >
-              PDF
+              Upload CV
             </button>
             |
             <button
               className={` px-2 ${
-                queryJob ? "text-xl text-white" : "text-md text-gray-400"
+                queryJob ? "text-xl text-[#555555]" : "text-md text-gray-400"
               }`}
               onClick={() => handleSelectItem("Job")}
             >
-              Job
+              Input Job
+            </button>
+            |
+            <button
+              className={` px-2 ${
+                queryHobbies
+                  ? "text-xl text-[#555555]"
+                  : "text-md text-gray-400"
+              }`}
+              onClick={() => handleSelectItem("Hobbies")}
+            >
+              Input Hobbies
             </button>
           </div>
           {queryText ? (
-            <div className="pl-5 text-black w-full flex flex-col">
+            <div className="pl-10 text-black w-full flex flex-col">
               <textarea
                 type="text"
-                className="w-full h-[20rem] p-2"
+                className="w-full h-[20rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
                 placeholder="Type or paste your text here..."
                 onChange={handleTextChange}
               ></textarea>
               <button
                 onClick={getTasksFromText}
-                className=" bg-gray-500 p-2 mt-2  w-fit text-white self-end"
+                className=" bg-[#474545] p-2 text-white w-fit rounded-md mt-5"
               >
-                Get Tasks from Text
+                Generate
               </button>
             </div>
           ) : null}
           {queryURL ? (
-            <div className="pl-5 text-black flex flex-col">
+            <div className="pl-10 text-black flex flex-col">
               <input
                 type="text"
                 className="w-full p-2"
@@ -276,7 +324,7 @@ export default function Chat() {
             </div>
           ) : null}
           {queryPDF ? (
-            <div className="pl-5 text-black  flex flex-col">
+            <div className="pl-10 text-black  flex flex-col">
               <input
                 type="file"
                 className="text-white"
@@ -291,7 +339,7 @@ export default function Chat() {
             </div>
           ) : null}
           {queryJob ? (
-            <div className="pl-5 text-black flex flex-col">
+            <div className="pl-10 text-black flex flex-col">
               <input
                 type="text"
                 className="w-1/2 p-2"
@@ -307,19 +355,40 @@ export default function Chat() {
               </button>
             </div>
           ) : null}
+          {queryHobbies ? (
+            <div className="pl-10 text-black flex flex-col">
+              <textarea
+                type="text"
+                className="w-full h-[20rem] p-2 bg-[#D9D9D9] text-white rounded-md"
+                placeholder="List down your hobbies and/or daily activities"
+                value={hobbies}
+                onChange={handleHobbiesChange}
+              ></textarea>
+              <button
+                // onClick={getTasksFromJob}
+                className=" bg-gray-500 p-2 mt-2  w-fit text-white self-end"
+              >
+                Get Tasks from Hobbies
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <div className="flex flex-col w-1/2 h-full p-5">
-          <p className=" text-3xl font-bold mb-2">Tasks from text: </p>
+          {/* <p className=" text-3xl font-bold mb-2">Tasks from text: </p>
           {response.map((r) => (
             <div key={r.id}>
               <p className="text-white text-xl pb-1">•{r}</p>
             </div>
-          ))}
-          <p className="text-3xl font-bold mb-2">IWAs from tasks: </p>
+          ))} */}
+          {/* <p className="text-2xl font-medium mt-[8.5rem]">IWAs from tasks: </p> */}
+          <div className=" h-[13rem]"></div>
+          {/* <p className="font-bold"> Tasks Generated: </p> */}
+          <div className=""></div>
           {IWAs.map((iwa) => (
-            <div key={iwa.id}>
-              <p className="text-white text-xl pb-1">•{iwa}</p>
+            <div className="flex flex-row items-center" key={iwa.id}>
+              {/* <p className="mr-2">•</p> */}
+              <p className=" ml-2 pb-2">{iwa}</p>
             </div>
           ))}
         </div>

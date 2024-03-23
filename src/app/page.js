@@ -25,7 +25,7 @@ export default function Chat() {
   const [response, setResponse] = useState([]);
   const [IWAs, setIWAs] = useState([]);
   const responseRef = useRef(null);
-  const [user, setUser] = useState(generateID);
+  const [user, setUser] = useState(generateID());
 
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
@@ -125,6 +125,17 @@ export default function Chat() {
     setUser(generateID());
   }
 
+  const hiddenFileInput = useRef(null);
+
+  const handleUpload = (event) => {
+    hiddenFileInput.current.click();
+  };
+
+  const handleChange = (event) => {
+    const fileUploaded = event.target.files[0];
+    handleFile(fileUploaded);
+  };
+
   function handleGenerate() {
     if (inputtype === "Text") {
       getTasksFromText();
@@ -154,6 +165,15 @@ export default function Chat() {
   function handleURLChange(e) {
     const urlLink = e.target.value;
     setURL(urlLink);
+  }
+
+  function handleReset() {
+    setIWAs([]);
+    setHobbies("");
+    setText("");
+    setURL("");
+    setJob("");
+    generateID();
   }
   function handleFileChange(e) {
     console.log(e.target);
@@ -253,7 +273,7 @@ export default function Chat() {
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
-        await new Promise((resolve) => setTimeout(resolve, 2000)); // 1 second delay
+        await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
       }
     } catch (error) {
       console.error("Error:", error);
@@ -294,16 +314,7 @@ export default function Chat() {
         "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
     });
   }
-  const hiddenFileInput = useRef(null);
 
-  const handleUpload = (event) => {
-    hiddenFileInput.current.click();
-  };
-
-  const handleChange = (event) => {
-    const fileUploaded = event.target.files[0];
-    handleFile(fileUploaded);
-  };
   return (
     <div className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll">
       <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
@@ -419,6 +430,7 @@ export default function Chat() {
             <div className="px-10 text-black w-full flex flex-col">
               <textarea
                 type="text"
+                value={text}
                 className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
                 placeholder="Type or paste your text here..."
                 onChange={handleTextChange}
@@ -428,6 +440,7 @@ export default function Chat() {
           {queryURL ? (
             <div className="px-10 text-black flex flex-col">
               <input
+                value={url}
                 type="text"
                 className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
                 placeholder="Enter a URL here..."
@@ -475,12 +488,21 @@ export default function Chat() {
               ></textarea>
             </div>
           ) : null}
-          <div className="pl-10">
+          <div className="px-10 flex gap-5">
             <button
               onClick={handleGenerate}
-              className=" bg-[#474545] py-2 px-5 text-white w-fit tracking-[0.10rem] rounded-md mt-5"
+              className=" bg-[#474545] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
             >
               Generate
+            </button>
+            <button
+              onClick={handleReset}
+              className=" bg-[#474545] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
+            >
+              Reset
+            </button>
+            <button className=" bg-[#474545] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5">
+              Save
             </button>
           </div>
         </div>

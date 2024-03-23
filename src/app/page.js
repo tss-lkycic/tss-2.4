@@ -7,6 +7,7 @@ import translate from "/public/translate.svg";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import OpenAI from "openai";
+import html2canvas from "html2canvas";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
@@ -214,34 +215,6 @@ export default function Chat() {
     }
   }
 
-  // async function getIWAs(tasklist) {
-  //   try {
-  //     // Data to send in the request body
-
-  //     const requestData = {
-  //       user_id: user,
-  //       task: tasklist,
-  //     };
-  //     console.log(requestData);
-
-  //     // Call the second API with data in the request body
-  //     const response2 = await fetch("/api/tasktoIWA", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(requestData),
-  //     });
-  //     const data2 = await response2.json();
-  //     console.log("Response from second API:", data2);
-  //     const iwas = data2.body;
-  //     const iwa_arr = JSON.parse(iwas);
-  //     processIWA(iwa_arr);
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // }
-
   async function getIWAs(tasklist) {
     try {
       let noOfTasksInQueue = Infinity; // Set initially to a large number
@@ -279,6 +252,32 @@ export default function Chat() {
       console.error("Error:", error);
     }
   }
+
+  const downloadImage = async () => {
+    const resultsDiv = document.getElementById("results");
+
+    // Get the full scroll height of the div
+    const fullHeight = resultsDiv.scrollHeight;
+
+    // Set the div height to its full scrollable height
+    resultsDiv.style.height = fullHeight + "px";
+
+    try {
+      // Use html2canvas to capture the entire contents of the div
+      const canvas = await html2canvas(resultsDiv);
+
+      // Reset the div height to its original size
+      resultsDiv.style.height = "";
+
+      // Create a download link for the captured image
+      const link = document.createElement("a");
+      link.download = "translate_tasks.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch (error) {
+      console.error("Error capturing image:", error);
+    }
+  };
 
   function getTasksFromFile() {}
   function getTasksFromURL() {}
@@ -501,7 +500,10 @@ export default function Chat() {
             >
               Reset
             </button>
-            <button className=" bg-[#474545] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5">
+            <button
+              onClick={downloadImage}
+              className=" bg-[#474545] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5"
+            >
               Save
             </button>
           </div>
@@ -509,7 +511,7 @@ export default function Chat() {
 
         <div className="flex flex-col w-1/2 h-full p-5">
           <div className="w-full h-2/5 "></div>
-          <div className="w-full h-3/5 ">
+          <div className="w-full h-3/5" id="results">
             {IWAs.map((iwa) => (
               <div className="flex flex-row items-center" key={iwa.id}>
                 <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>

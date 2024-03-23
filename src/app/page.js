@@ -3,6 +3,7 @@
 import { useChat } from "ai/react";
 import logo from "/public/logo.svg";
 import new_logo from "/public/new_logo.svg";
+import translate from "/public/translate.svg";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import OpenAI from "openai";
@@ -11,7 +12,7 @@ export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
     useChat();
 
-  const [dropdownLabel, setDropdownLabel] = useState("Text");
+  const [inputtype, setInputType] = useState("Text");
   const [queryURL, setQueryURl] = useState(false);
   const [queryText, setQueryText] = useState(true);
   const [queryPDF, setQueryPDF] = useState(false);
@@ -20,9 +21,12 @@ export default function Chat() {
   const [job, setJob] = useState("");
   const [hobbies, setHobbies] = useState("");
   const [text, setText] = useState("");
+  const [url, setURL] = useState("");
   const [response, setResponse] = useState([]);
   const [IWAs, setIWAs] = useState([]);
   const responseRef = useRef(null);
+  const [user, setUser] = useState(generateID);
+
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
 
@@ -60,9 +64,12 @@ export default function Chat() {
       ) {
         // If response is stable and not empty, call fetchData
         console.log("This is the latest response:", response);
-        fetchData(response);
+        invokeTask(response);
+        setTimeout(() => {
+          getIWAs(response);
+        }, 2000);
       }
-    }, 3000); // Adjust the delay time as needed
+    }, 500); // Adjust the delay time as needed
 
     // Cleanup the timeout if response changes before the delay ends
     return () => clearTimeout(timeout);
@@ -82,7 +89,7 @@ export default function Chat() {
   }
 
   function handleSelectItem(value) {
-    setDropdownLabel(value);
+    setInputType(value);
     if (value === "URL") {
       setQueryURl(true);
       setQueryText(false);
@@ -114,6 +121,20 @@ export default function Chat() {
       setQueryJob(false);
       setQueryHobbies(true);
     }
+    setIWAs([]);
+    setUser(generateID());
+  }
+
+  function handleGenerate() {
+    if (inputtype === "Text") {
+      getTasksFromText();
+    } else if (inputtype === "URL") {
+    } else if (inputtype === "File") {
+    } else if (inputtype === "Job") {
+      getTasksFromJob();
+    } else if (inputtype === "Hobbies") {
+      getTasksFromHobbies();
+    }
   }
 
   function handleJobChange(e) {
@@ -128,7 +149,7 @@ export default function Chat() {
 
   function handleHobbiesChange(e) {
     const hobbiesContent = e.target.value;
-    setText(hobbiesContent);
+    setHobbies(hobbiesContent);
   }
   function handleURLChange(e) {
     const urlLink = e.target.value;
@@ -138,39 +159,22 @@ export default function Chat() {
     console.log(e.target);
   }
   function processIWA(array) {
-    console.log(array);
     let iwa_list = [];
     for (let i = 0; i < array.length; i++) {
       const iwa_pair = array[i];
       const result_iwa = iwa_pair[1];
       iwa_list.push(result_iwa);
     }
-    console.log(iwa_list, "helo");
     iwa_list = Array.from(new Set(iwa_list));
-    console.log(iwa_list, "helo2");
     setIWAs(iwa_list);
   }
 
-  function getTasksFromText() {
-    const userText = text;
-    append({
-      role: "user",
-      content:
-        userText +
-        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. ",
-    });
-  }
-
-  const [result1, setResult1] = useState("");
-  const [result2, setResult2] = useState("");
-
-  async function fetchData(tasklist) {
+  async function invokeTask(tasklist) {
     try {
       // Data to send in the request body
 
       const requestData = {
-        user_id: generateID(),
+        user_id: user,
         task: tasklist,
       };
       console.log(requestData);
@@ -184,21 +188,73 @@ export default function Chat() {
         // body: requestData,
       });
       const data1 = await response1.json();
-      console.log("helo, Response from first API:", data1);
+      console.log("Response from first API:", data1);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
 
-      // Call the second API with data in the request body
-      const response2 = await fetch("/api/tasktoIWA", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
-      const data2 = await response2.json();
-      console.log("Response from second API:", data2);
-      const iwas = data2.body;
-      const iwa_arr = JSON.parse(iwas);
-      processIWA(iwa_arr);
+  // async function getIWAs(tasklist) {
+  //   try {
+  //     // Data to send in the request body
+
+  //     const requestData = {
+  //       user_id: user,
+  //       task: tasklist,
+  //     };
+  //     console.log(requestData);
+
+  //     // Call the second API with data in the request body
+  //     const response2 = await fetch("/api/tasktoIWA", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(requestData),
+  //     });
+  //     const data2 = await response2.json();
+  //     console.log("Response from second API:", data2);
+  //     const iwas = data2.body;
+  //     const iwa_arr = JSON.parse(iwas);
+  //     processIWA(iwa_arr);
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //   }
+  // }
+
+  async function getIWAs(tasklist) {
+    try {
+      let noOfTasksInQueue = Infinity; // Set initially to a large number
+      while (noOfTasksInQueue > 0) {
+        const requestData = {
+          user_id: user,
+          task: tasklist,
+        };
+        console.log(requestData);
+
+        const response = await fetch("/api/tasktoIWA", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
+        const data = await response.json();
+        console.log("Response from API:", data);
+
+        noOfTasksInQueue = data.no_of_tasks_in_queue; // Update the variable
+
+        if (noOfTasksInQueue > 0) {
+          const iwas = data.body;
+          const iwa_arr = JSON.parse(iwas);
+          processIWA(iwa_arr);
+        } else {
+          console.log("No tasks in queue. Exiting loop.");
+        }
+
+        // Optional: Add a delay between API calls to avoid flooding the server
+        await new Promise((resolve) => setTimeout(resolve, 2000)); // 1 second delay
+      }
     } catch (error) {
       console.error("Error:", error);
     }
@@ -206,6 +262,27 @@ export default function Chat() {
 
   function getTasksFromFile() {}
   function getTasksFromURL() {}
+
+  function getTasksFromText() {
+    const userText = text;
+    append({
+      role: "user",
+      content:
+        userText +
+        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
+        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. ",
+    });
+  }
+  function getTasksFromHobbies() {
+    const userHobbies = hobbies;
+    append({
+      role: "user",
+      content:
+        userHobbies +
+        "Based on this list of hobbies and daily activities, extract and summarise possible tasks into a set of sentences and return them such that each task is numbered. ",
+    });
+  }
+
   function getTasksFromJob() {
     const userJob = job;
     append({
@@ -217,180 +294,206 @@ export default function Chat() {
         "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
     });
   }
+  const hiddenFileInput = useRef(null);
 
+  const handleUpload = (event) => {
+    hiddenFileInput.current.click();
+  };
+
+  const handleChange = (event) => {
+    const fileUploaded = event.target.files[0];
+    handleFile(fileUploaded);
+  };
   return (
     <div className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll">
       <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
-        <Image src={new_logo} width={40} alt="Logo" className="text-lg"></Image>
-        <p className="ml-2 text-xl">S T A K</p>
+        <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
+        <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
       </div>
 
       <div className="flex flex-row w-full h-full text-[#555555]">
-        <div className="flex flex-col w-1/2 h-full">
-          <div className="pl-10 pt-10 w-1/2">
-            <div className="flex flex-row items-center py-2 font-medium">
-              <Image
-                src={new_logo}
-                width={40}
-                alt="Logo"
-                className="text-lg"
-              ></Image>
-              <h3 className="ml-5 text-xl">Task Translator</h3>
-            </div>{" "}
-            <p className="text-xs">
-              Task Translator explanation. Lorem ipsum dolor sit amet,
-              consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-              labore et dolore magna aliqua.
-            </p>
+        <div className="flex flex-col w-1/2 h-full tracking-[0.10rem]">
+          <div className="w-full h-2/5 ">
+            <div className="px-10 pt-5 w-2/3">
+              <div className="flex flex-row items-center py-2 font-medium">
+                <Image
+                  src={translate}
+                  width={40}
+                  alt="Logo"
+                  className="text-lg"
+                ></Image>
+                <h3 className="ml-5 text-xl tracking-[0.10rem]">
+                  Task Translator
+                </h3>
+              </div>{" "}
+              <p className="text-xs tracking-[0.10rem]">
+                Translate your daily tasks into industry-recognized activities
+                to provide a clear, standardized representation of your
+                professional contributions.
+              </p>
+            </div>
+            <div className="px-10 pt-5 pb-5 flex justify-between ">
+              <button
+                className={` pr-2 tracking-[0.10rem] ${
+                  queryText ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                }`}
+                onClick={() => handleSelectItem("Text")}
+              >
+                Paste Text
+              </button>
+              |
+              <button
+                className={` px-2 tracking-[0.10rem] ${
+                  queryURL ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                }`}
+                onClick={() => handleSelectItem("URL")}
+              >
+                Link URL
+              </button>
+              |
+              <button
+                className={` px-2 tracking-[0.10rem] ${
+                  queryPDF ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                }`}
+                onClick={() => handleSelectItem("PDF")}
+              >
+                Upload CV
+              </button>
+              |
+              <button
+                className={` px-2 tracking-[0.10rem] ${
+                  queryJob ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                }`}
+                onClick={() => handleSelectItem("Job")}
+              >
+                Input Job
+              </button>
+              |
+              <button
+                className={` px-2 tracking-[0.10rem] ${
+                  queryHobbies
+                    ? "text-md text-[#555555]"
+                    : "text-sm text-gray-400"
+                }`}
+                onClick={() => handleSelectItem("Hobbies")}
+              >
+                Input Hobbies
+              </button>
+            </div>
+            {queryText ? (
+              <p className="px-10 text-xs pb-5">
+                Please submit the text you wish to convert into standardized
+                task activities. This can be a job description, course
+                description, or your resume content.
+              </p>
+            ) : null}
+            {queryURL ? (
+              <p className="px-10 text-xs pb-5">
+                Please submit the URL with content that can be translated into
+                standardized task activities. This can be a link to a job
+                description, course description, or your resume.
+              </p>
+            ) : null}
+            {queryPDF ? (
+              <p className="px-10 text-xs pb-5">
+                Please upload the file that has content that can be translated
+                into standardized task activities. This can be a job
+                description, course description, or your resume.
+              </p>
+            ) : null}
+            {queryJob ? (
+              <p className="px-10 text-xs pb-5">
+                Please input a job title to generate a list of its standardized
+                task activities.
+              </p>
+            ) : null}
+            {queryHobbies ? (
+              <p className="px-10 text-xs pb-5">
+                Please input a list of hobbies and/or daily activities to
+                generate a list of its standardized task activities.
+              </p>
+            ) : null}
           </div>
-          <div className="pl-10 pt-10 pb-5 flex justify-between">
-            <button
-              className={` pr-2 ${
-                queryText ? "text-xl text-[#555555]" : "text-md text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("Text")}
-            >
-              Paste Text
-            </button>
-            |
-            <button
-              className={` px-2 ${
-                queryURL ? "text-xl text-[#555555]" : "text-md text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("URL")}
-            >
-              Link URL
-            </button>
-            |
-            <button
-              className={` px-2 ${
-                queryPDF ? "text-xl text-[#555555]" : "text-md text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("PDF")}
-            >
-              Upload CV
-            </button>
-            |
-            <button
-              className={` px-2 ${
-                queryJob ? "text-xl text-[#555555]" : "text-md text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("Job")}
-            >
-              Input Job
-            </button>
-            |
-            <button
-              className={` px-2 ${
-                queryHobbies
-                  ? "text-xl text-[#555555]"
-                  : "text-md text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("Hobbies")}
-            >
-              Input Hobbies
-            </button>
-          </div>
+
           {queryText ? (
-            <div className="pl-10 text-black w-full flex flex-col">
+            <div className="px-10 text-black w-full flex flex-col">
               <textarea
                 type="text"
-                className="w-full h-[20rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
+                className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
                 placeholder="Type or paste your text here..."
                 onChange={handleTextChange}
               ></textarea>
-              <button
-                onClick={getTasksFromText}
-                className=" bg-[#474545] p-2 text-white w-fit rounded-md mt-5"
-              >
-                Generate
-              </button>
             </div>
           ) : null}
           {queryURL ? (
-            <div className="pl-10 text-black flex flex-col">
+            <div className="px-10 text-black flex flex-col">
               <input
                 type="text"
-                className="w-full p-2"
+                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
                 placeholder="Enter a URL here..."
                 onChange={handleURLChange}
               ></input>
-              <button
-                onClick={getTasksFromURL}
-                className=" bg-gray-500 p-2 mt-2  w-fit text-white self-end"
-              >
-                Get Tasks from URL
-              </button>
             </div>
           ) : null}
           {queryPDF ? (
-            <div className="pl-10 text-black  flex flex-col">
+            <div className="px-10 text-black  flex flex-col">
+              <button
+                onClick={handleUpload}
+                className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
+              >
+                Select File Here
+              </button>
               <input
                 type="file"
-                className="text-white"
-                onChange={handleFileChange}
+                id="file"
+                className="hidden"
+                onChange={handleChange}
+                // onChange={handleFileChange}
+                ref={hiddenFileInput}
               ></input>
-              <button
-                onClick={getTasksFromFile}
-                className=" bg-gray-500 p-2 mt-2  w-fit text-white self-end"
-              >
-                Get Tasks from File
-              </button>
             </div>
           ) : null}
           {queryJob ? (
-            <div className="pl-10 text-black flex flex-col">
+            <div className="px-10 text-black flex flex-col">
               <input
                 type="text"
-                className="w-1/2 p-2"
+                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
                 value={job}
                 onChange={handleJobChange}
                 placeholder="Enter a job title here..."
               ></input>
-              <button
-                onClick={getTasksFromJob}
-                className=" bg-gray-500 p-2 mt-2  w-fit text-white self-end"
-              >
-                Get Tasks from Job
-              </button>
             </div>
           ) : null}
           {queryHobbies ? (
-            <div className="pl-10 text-black flex flex-col">
+            <div className="px-10 text-black flex flex-col">
               <textarea
                 type="text"
-                className="w-full h-[20rem] p-2 bg-[#D9D9D9] text-white rounded-md"
+                className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
                 placeholder="List down your hobbies and/or daily activities"
                 value={hobbies}
                 onChange={handleHobbiesChange}
               ></textarea>
-              <button
-                // onClick={getTasksFromJob}
-                className=" bg-gray-500 p-2 mt-2  w-fit text-white self-end"
-              >
-                Get Tasks from Hobbies
-              </button>
             </div>
           ) : null}
+          <div className="pl-10">
+            <button
+              onClick={handleGenerate}
+              className=" bg-[#474545] py-2 px-5 text-white w-fit tracking-[0.10rem] rounded-md mt-5"
+            >
+              Generate
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-col w-1/2 h-full p-5">
-          {/* <p className=" text-3xl font-bold mb-2">Tasks from text: </p>
-          {response.map((r) => (
-            <div key={r.id}>
-              <p className="text-white text-xl pb-1">•{r}</p>
-            </div>
-          ))} */}
-          {/* <p className="text-2xl font-medium mt-[8.5rem]">IWAs from tasks: </p> */}
-          <div className=" h-[13rem]"></div>
-          {/* <p className="font-bold"> Tasks Generated: </p> */}
-          <div className=""></div>
-          {IWAs.map((iwa) => (
-            <div className="flex flex-row items-center" key={iwa.id}>
-              {/* <p className="mr-2">•</p> */}
-              <p className=" ml-2 pb-2">{iwa}</p>
-            </div>
-          ))}
+          <div className="w-full h-2/5 "></div>
+          <div className="w-full h-3/5 ">
+            {IWAs.map((iwa) => (
+              <div className="flex flex-row items-center" key={iwa.id}>
+                <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

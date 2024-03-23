@@ -339,29 +339,67 @@ export default function Chat() {
     }
   }
 
+  //   async function getIWAs(tasklist) {
+  //     try {
+  //       // Data to send in the request body
+
+  //       const requestData = {
+  //         user_id: user,
+  //         task: tasklist,
+  //       };
+  //       console.log(requestData);
+
+  //       // Call the second API with data in the request body
+  //       const response2 = await fetch("/api/tasktoIWA", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(requestData),
+  //       });
+  //       const data2 = await response2.json();
+  //       console.log("Response from second API:", data2);
+  //       const iwas = data2.body;
+  //       const iwa_arr = JSON.parse(iwas);
+  //       processIWA(iwa_arr);
+  //     } catch (error) {
+  //       console.error("Error:", error);
+  //     }
+  //   }
+
   async function getIWAs(tasklist) {
     try {
-      // Data to send in the request body
+      let noOfTasksInQueue = Infinity; // Set initially to a large number
+      while (noOfTasksInQueue > 0) {
+        const requestData = {
+          user_id: user,
+          task: tasklist,
+        };
+        console.log(requestData);
 
-      const requestData = {
-        user_id: user,
-        task: tasklist,
-      };
-      console.log(requestData);
+        const response = await fetch("/api/tasktoIWA", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
+        const data = await response.json();
+        console.log("Response from API:", data);
 
-      // Call the second API with data in the request body
-      const response2 = await fetch("/api/tasktoIWA", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-      });
-      const data2 = await response2.json();
-      console.log("Response from second API:", data2);
-      const iwas = data2.body;
-      const iwa_arr = JSON.parse(iwas);
-      processIWA(iwa_arr);
+        noOfTasksInQueue = data.no_of_tasks_in_queue; // Update the variable
+
+        if (noOfTasksInQueue > 0) {
+          const iwas = data.body;
+          const iwa_arr = JSON.parse(iwas);
+          processIWA(iwa_arr);
+        } else {
+          console.log("No tasks in queue. Exiting loop.");
+        }
+
+        // Optional: Add a delay between API calls to avoid flooding the server
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
+      }
     } catch (error) {
       console.error("Error:", error);
     }

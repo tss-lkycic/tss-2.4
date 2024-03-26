@@ -279,6 +279,18 @@ export default function Chat() {
     }
   };
 
+  // const downloadImage = () => {
+  //   // Capture the entire document
+  //   html2canvas(document.body, { scrollY: -window.scrollY }).then(function (
+  //     canvas
+  //   ) {
+  //     const link = document.createElement("a");
+  //     link.download = "entire_page.png";
+  //     link.href = canvas.toDataURL("image/png");
+  //     link.click();
+  //   });
+  // };
+
   function getTasksFromFile() {}
   function getTasksFromURL() {}
 
@@ -298,7 +310,7 @@ export default function Chat() {
       role: "user",
       content:
         userHobbies +
-        "Based on this list of hobbies and daily activities, extract and summarise possible tasks into a set of sentences and return them such that each task is numbered. ",
+        "Based on this list of activities, create some possible tasks for each activity in sentences and return them such that each task is numbered. ",
     });
   }
 
@@ -315,15 +327,18 @@ export default function Chat() {
   }
 
   return (
-    <div className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll">
+    <div
+      className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll"
+      id="results"
+    >
       <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
         <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
         <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
       </div>
 
-      <div className="flex flex-row w-full h-full text-[#555555]">
-        <div className="flex flex-col w-1/2 h-full tracking-[0.10rem]">
-          <div className="w-full h-2/5 ">
+      <div className="flex flex-row w-full h-full  text-[#555555] ">
+        <div className="flex flex-col w-1/2 h-full  tracking-[0.10rem]">
+          <div className="w-full h-2/5">
             <div className="px-10 pt-5 w-2/3">
               <div className="flex flex-row items-center py-2 font-medium">
                 <Image
@@ -342,7 +357,7 @@ export default function Chat() {
                 professional contributions.
               </p>
             </div>
-            <div className="px-10 pt-5 pb-5 flex justify-between ">
+            <div className="px-10 pt-5 pb-5  justify-between ">
               <button
                 className={` pr-2 tracking-[0.10rem] ${
                   queryText ? "text-md text-[#555555]" : "text-sm text-gray-400"
@@ -511,7 +526,7 @@ export default function Chat() {
 
         <div className="flex flex-col w-1/2 h-full p-5">
           <div className="w-full h-2/5 "></div>
-          <div className="w-full h-3/5" id="results">
+          <div className="w-full h-3/5 pb-10">
             {IWAs.map((iwa) => (
               <div className="flex flex-row items-center" key={iwa.id}>
                 <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>

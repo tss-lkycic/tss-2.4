@@ -32,6 +32,8 @@ export default function Chat() {
   const [url1, setURL1] = useState("");
   const [job2, setJob2] = useState("");
   const [text2, setText2] = useState("");
+  const [hobbies2, setHobbies2] = useState("");
+  const [hobbies1, setHobbies1] = useState("");
   const [response, setResponse] = useState([]);
   const [IWAs, setIWAs] = useState([]);
   const [IWAs1, setIWAs1] = useState([]);
@@ -43,6 +45,8 @@ export default function Chat() {
   const [d_score, setDScore] = useState(0);
   const responseRef = useRef(null);
   const [user, setUser] = useState(generateID);
+  const [loaded, setLoaded] = useState(false);
+  const [completed, setCompleted] = useState(false);
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
 
@@ -65,14 +69,14 @@ export default function Chat() {
 
   useEffect(() => {
     console.log("IWAs 1: ", IWAs1);
+    if (IWAs1.length > 0) {
+      console.log("got some result");
+      setLoaded(true);
+    } else setLoaded(false);
   }, [IWAs1]);
   useEffect(() => {
     console.log("IWAs 2: ", IWAs2);
-
-    // if (IWAs2.length !== 0) {
-    //   console.log("passed");
     handleSplitTasks(IWAs1, IWAs2);
-    // }
   }, [IWAs2]);
 
   useEffect(() => {
@@ -93,9 +97,9 @@ export default function Chat() {
         invokeTask(response);
         setTimeout(() => {
           getIWAs(response);
-        }, 4000);
+        }, 500);
       }
-    }, 500); // Adjust the delay time as needed
+    }, 1000); // Adjust the delay time as needed
 
     // Cleanup the timeout if response changes before the delay ends
     return () => clearTimeout(timeout);
@@ -116,8 +120,6 @@ export default function Chat() {
 
   function handleSplitTasks(list1, list2) {
     // Initialize arrays to store similar and different strings
-    console.log(1, list1);
-    console.log(2, list2);
     const similarStrings = [];
     const differentStrings1 = [];
     const differentStrings2 = [];
@@ -169,6 +171,20 @@ export default function Chat() {
     } else setDScore(differentScore.toFixed(1));
   }
 
+  function handleReset() {
+    setIWAs([]);
+    setHobbies1("");
+    setText1("");
+    setURL1("");
+    setJob1("");
+    setHobbies2("");
+    setText2("");
+    // setURL2("");
+    setJob2("");
+    generateID();
+    setLoaded(false);
+  }
+  function handleSave() {}
   function handleSelectInput1(value) {
     setInput1(value);
     if (value === "URL") {
@@ -287,32 +303,28 @@ export default function Chat() {
     setInput1IWA(true);
     // setCompare(true);
     if (input1 === "Text") {
-      console.log("input 1 is text");
       getTasksFromText1();
     } else if (input1 === "URL") {
-      console.log("input 1 is url");
     } else if (input1 === "File") {
-      console.log("input 1 is file");
     } else if (input1 === "Job") {
-      console.log("input 1 is job");
       getTasksFromJob1();
+    } else if (input1 === "Hobbies") {
+      getTasksFromHobbies1();
     }
     setTimeout(() => {
       setUser(generateID());
       setInput1IWA(false);
       setInput2IWA(true);
       if (input2 === "Text") {
-        console.log("input 2 is text");
         getTasksFromText2();
       } else if (input2 === "URL") {
-        console.log("input 2 is url");
       } else if (input2 === "File") {
-        console.log("input 2 is url");
       } else if (input2 === "Job") {
-        console.log("input 2 is job");
         getTasksFromJob2();
+      } else if (input2 === "Hobbies") {
+        getTasksFromHobbies2();
       }
-    }, 11000);
+    }, 10000);
   }
 
   function getTasksFromText1() {
@@ -362,34 +374,6 @@ export default function Chat() {
     }
   }
 
-  //   async function getIWAs(tasklist) {
-  //     try {
-  //       // Data to send in the request body
-
-  //       const requestData = {
-  //         user_id: user,
-  //         task: tasklist,
-  //       };
-  //       console.log(requestData);
-
-  //       // Call the second API with data in the request body
-  //       const response2 = await fetch("/api/tasktoIWA", {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(requestData),
-  //       });
-  //       const data2 = await response2.json();
-  //       console.log("Response from second API:", data2);
-  //       const iwas = data2.body;
-  //       const iwa_arr = JSON.parse(iwas);
-  //       processIWA(iwa_arr);
-  //     } catch (error) {
-  //       console.error("Error:", error);
-  //     }
-  //   }
-
   async function getIWAs(tasklist) {
     try {
       let noOfTasksInQueue = Infinity; // Set initially to a large number
@@ -421,7 +405,7 @@ export default function Chat() {
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
+        await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
       }
     } catch (error) {
       console.error("Error:", error);
@@ -453,386 +437,391 @@ export default function Chat() {
         "  even if the job does not exist yet, into a set of 3 short sentences and return them such that each task is numbered. ",
     });
   }
+  function getTasksFromHobbies1() {
+    const userHobbies = hobbies1;
+    append({
+      role: "user",
+      content:
+        userHobbies +
+        "Based on this list of activities, create some possible tasks for each activity in sentences and return them such that each task is numbered. ",
+    });
+  }
+  function getTasksFromHobbies2() {
+    const userHobbies = hobbies2;
+    append({
+      role: "user",
+      content:
+        userHobbies +
+        "Based on this list of activities, create some possible tasks for each activity in sentences and return them such that each task is numbered. ",
+    });
+  }
 
   return (
     <div
-      className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll"
+      className="bg-[#F6F6F6] min-w-screen min-h-screen xflex flex-col overflow-scroll"
       id="results"
     >
-      <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
-        <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-        <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
-      </div>
-      <div className="flex flex-row w-full h-full text-[#555555]">
-        <div className="flex flex-col w-1/2 h-full tracking-[0.10rem]">
-          <div className="w-full h-2/5">
-            <div className="px-10 pt-5 w-2/3">
-              <div className="flex flex-row items-center py-2 font-medium">
-                <Image
-                  src={compare_logo}
-                  width={30}
-                  alt="Logo"
-                  className=""
-                ></Image>{" "}
-                <h3 className="ml-5 text-xl tracking-[0.10rem]">
-                  Task STAK Compare
-                </h3>
-              </div>{" "}
-              <p className="text-xs tracking-[0.10rem]">
-                Compare Stack explanation. Lorem ipsum dolor sit amet,
-                consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                labore et dolore magna aliqua.
-              </p>
-            </div>
-            <div className="px-10 pt-5 pb-5  justify-between ">
-              <button
-                className={` pr-2 tracking-[0.10rem] ${
-                  queryText1
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput1("Text")}
-              >
-                Paste Text
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryURL1 ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput1("URL")}
-              >
-                Link URL
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryPDF1 ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput1("PDF")}
-              >
-                Upload CV
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryJob1 ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput1("Job")}
-              >
-                Input Job
-              </button>{" "}
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryHobbies1
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput1("Hobbies")}
-              >
-                Input Hobbies
-              </button>
+      <div className="bg-[#F6F6F6] w-screen h-[80vh]  flex flex-col ">
+        <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
+          <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
+          <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
+        </div>
+        <div className="flex flex-row w-full h-full text-[#555555]">
+          <div className="flex flex-col w-1/2  h-full tracking-[0.10rem]">
+            <div className="w-full h-1/2">
+              <div className="px-10 pt-5 w-2/3">
+                <div className="flex flex-row items-center py-2 font-medium">
+                  <Image
+                    src={compare_logo}
+                    width={30}
+                    alt="Logo"
+                    className=""
+                  ></Image>{" "}
+                  <h3 className="ml-5 text-xl tracking-[0.10rem]">
+                    Task STAK Compare
+                  </h3>
+                </div>{" "}
+                <p className="text-xs tracking-[0.10rem]">
+                  Compare Stack explanation. Lorem ipsum dolor sit amet,
+                  consectetur adipiscing elit, sed do eiusmod tempor incididunt
+                  ut labore et dolore magna aliqua.
+                </p>
+              </div>
+              <div className="px-10 pt-5 pb-5  justify-between ">
+                <button
+                  className={` pr-2 tracking-[0.10rem] ${
+                    queryText1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput1("Text")}
+                >
+                  Paste Text
+                </button>
+                |
+                <button
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryURL1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput1("URL")}
+                >
+                  Link URL
+                </button>
+                |
+                <button
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryPDF1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput1("PDF")}
+                >
+                  Upload CV
+                </button>
+                |
+                <button
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryJob1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput1("Job")}
+                >
+                  Input Job
+                </button>{" "}
+                |
+                <button
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryHobbies1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput1("Hobbies")}
+                >
+                  Input Hobbies
+                </button>
+              </div>
+              {queryText1 ? (
+                <p className="px-10 text-xs pb-5">
+                  Please submit the text you wish to convert into standardized
+                  task activities. This can be a job description, course
+                  description, or your resume content.
+                </p>
+              ) : null}
+              {queryURL1 ? (
+                <p className="px-10 text-xs pb-5">
+                  Please submit the URL with content that can be translated into
+                  standardized task activities. This can be a link to a job
+                  description, course description, or your resume.
+                </p>
+              ) : null}
+              {queryPDF1 ? (
+                <p className="px-10 text-xs pb-5">
+                  Please upload the file that has content that can be translated
+                  into standardized task activities. This can be a job
+                  description, course description, or your resume.
+                </p>
+              ) : null}
+              {queryJob1 ? (
+                <p className="px-10 text-xs pb-5">
+                  Please input a job title to generate a list of its
+                  standardized task activities.
+                </p>
+              ) : null}
+              {queryHobbies1 ? (
+                <p className="px-10 text-xs pb-5">
+                  Please input a list of hobbies and/or daily activities to
+                  generate a list of its standardized task activities.
+                </p>
+              ) : null}
             </div>
             {queryText1 ? (
-              <p className="px-10 text-xs pb-5">
-                Please submit the text you wish to convert into standardized
-                task activities. This can be a job description, course
-                description, or your resume content.
-              </p>
+              <div className="px-10 text-black w-full flex flex-col">
+                <textarea
+                  type="text"
+                  value={text1}
+                  className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
+                  placeholder="Type or paste your text here..."
+                  onChange={handleTextChange1}
+                ></textarea>
+              </div>
             ) : null}
             {queryURL1 ? (
-              <p className="px-10 text-xs pb-5">
-                Please submit the URL with content that can be translated into
-                standardized task activities. This can be a link to a job
-                description, course description, or your resume.
-              </p>
+              <div className="px-10 text-black flex flex-col">
+                <input
+                  value={url1}
+                  type="text"
+                  className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
+                  placeholder="Enter a URL here..."
+                  // onChange={handleURLChange}
+                ></input>
+              </div>
             ) : null}
             {queryPDF1 ? (
-              <p className="px-10 text-xs pb-5">
-                Please upload the file that has content that can be translated
-                into standardized task activities. This can be a job
-                description, course description, or your resume.
-              </p>
+              <div className="pl-10 pr-5  text-black  flex flex-col">
+                <button
+                  // onClick={handleUpload}
+                  className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
+                >
+                  Select File Here
+                </button>
+                <input
+                  type="file"
+                  id="file"
+                  className="hidden"
+                  // onChange={handleChange}
+                  // onChange={handleFileChange}
+                  // ref={hiddenFileInput}
+                ></input>
+              </div>
             ) : null}
             {queryJob1 ? (
-              <p className="px-10 text-xs pb-5">
-                Please input a job title to generate a list of its standardized
-                task activities.
-              </p>
+              <div className="pl-10 pr-5 text-black flex flex-col">
+                <input
+                  type="text"
+                  className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
+                  value={job1}
+                  onChange={handleJobChange1}
+                  placeholder="Enter a job title here..."
+                ></input>
+              </div>
             ) : null}
             {queryHobbies1 ? (
-              <p className="px-10 text-xs pb-5">
-                Please input a list of hobbies and/or daily activities to
-                generate a list of its standardized task activities.
-              </p>
+              <div className="px-10 text-black flex flex-col">
+                <textarea
+                  type="text"
+                  className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
+                  placeholder="List down your hobbies and/or daily activities"
+                  // value={hobbies}
+                  // onChange={handleHobbiesChange1}
+                ></textarea>
+              </div>
             ) : null}
+            {/* </div> */}
           </div>
-          {queryText1 ? (
-            <div className="px-10 text-black w-full flex flex-col">
-              <textarea
-                type="text"
-                value={text1}
-                className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
-                placeholder="Type or paste your text here..."
-                onChange={handleTextChange1}
-              ></textarea>
-            </div>
-          ) : null}
-          {queryURL1 ? (
-            <div className="px-10 text-black flex flex-col">
-              <input
-                value={url1}
-                type="text"
-                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
-                placeholder="Enter a URL here..."
-                // onChange={handleURLChange}
-              ></input>
-            </div>
-          ) : null}
-          {queryPDF1 ? (
-            <div className="pl-10 pr-5  text-black  flex flex-col">
-              <button
-                // onClick={handleUpload}
-                className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
-              >
-                Select File Here
-              </button>
-              <input
-                type="file"
-                id="file"
-                className="hidden"
-                // onChange={handleChange}
-                // onChange={handleFileChange}
-                // ref={hiddenFileInput}
-              ></input>
-            </div>
-          ) : null}
-          {queryJob1 ? (
-            <div className="pl-10 pr-5 text-black flex flex-col">
-              <input
-                type="text"
-                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
-                value={job1}
-                onChange={handleJobChange1}
-                placeholder="Enter a job title here..."
-              ></input>
-            </div>
-          ) : null}
-          {queryHobbies1 ? (
-            <div className="px-10 text-black flex flex-col">
-              <textarea
-                type="text"
-                className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
-                placeholder="List down your hobbies and/or daily activities"
-                // value={hobbies}
-                // onChange={handleHobbiesChange1}
-              ></textarea>
-            </div>
-          ) : null}
-          {/* </div> */}
-        </div>
 
-        <div className="flex flex-col w-1/2 h-full">
-          <div className=" h-2/5  w-full flex flex-col ">
-            <div className="px-10 pt-5 w-2/3 opacity-0">
-              <div className="flex flex-row items-center py-2 font-medium">
-                <Image
-                  src={compare_logo}
-                  width={30}
-                  alt="Logo"
-                  className=""
-                ></Image>{" "}
-                <h3 className="ml-5 text-xl tracking-[0.10rem]">
-                  Task STAK Compare
-                </h3>
-              </div>{" "}
-              <p className="text-xs tracking-[0.10rem]">
-                Compare Stack explanation. Lorem ipsum dolor sit amet,
-                consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                labore et dolore magna aliqua.
-              </p>
-            </div>
-            <div className="pl-5 pr-10 h-fit pb-5 pt-5 flex justify-between w-full">
-              <button
-                className={` pr-2 tracking-[0.10rem] ${
-                  queryText2
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput2("Text")}
-              >
-                Paste Text
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryURL2 ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput2("URL")}
-              >
-                Link URL
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryPDF2 ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput2("PDF")}
-              >
-                Upload CV
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryJob2 ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput2("Job")}
-              >
-                Input Job
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryHobbies2
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectInput2("Hobbies")}
-              >
-                Input Hobbies
-              </button>
+          <div className="flex flex-col w-1/2  h-full">
+            <div className=" h-1/2  w-full flex flex-col ">
+              <div className="px-10 pt-5 w-2/3 opacity-0">
+                <div className="flex flex-row items-center py-2 font-medium">
+                  <Image
+                    src={compare_logo}
+                    width={30}
+                    alt="Logo"
+                    className=""
+                  ></Image>{" "}
+                  <h3 className="ml-5 text-xl tracking-[0.10rem]">
+                    Task STAK Compare
+                  </h3>
+                </div>{" "}
+                <p className="text-xs tracking-[0.10rem]">
+                  Compare Stack explanation. Lorem ipsum dolor sit amet,
+                  consectetur adipiscing elit, sed do eiusmod tempor incididunt
+                  ut labore et dolore magna aliqua.
+                </p>
+              </div>
+              <div className="pl-5 pr-10 h-fit pb-5 pt-5 flex justify-between w-full">
+                <button
+                  className={` pr-2 tracking-[0.10rem] ${
+                    queryText2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput2("Text")}
+                >
+                  Paste Text
+                </button>
+                |
+                <button
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryURL2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput2("URL")}
+                >
+                  Link URL
+                </button>
+                |
+                <button
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryPDF2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput2("PDF")}
+                >
+                  Upload CV
+                </button>
+                |
+                <button
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryJob2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput2("Job")}
+                >
+                  Input Job
+                </button>
+                |
+                <button
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryHobbies2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
+                  onClick={() => handleSelectInput2("Hobbies")}
+                >
+                  Input Hobbies
+                </button>
+              </div>
+              {queryText2 ? (
+                <p className="pl-5 pr-10 text-xs pb-5 tracking-[0.10rem]">
+                  Please submit the text you wish to convert into standardized
+                  task activities. This can be a job description, course
+                  description, or your resume content.
+                </p>
+              ) : null}
+              {queryURL2 ? (
+                <p className="pl-5 pr-10 text-xs pb-5 tracking-[0.10rem]">
+                  Please submit the URL with content that can be translated into
+                  standardized task activities. This can be a link to a job
+                  description, course description, or your resume.
+                </p>
+              ) : null}
+              {queryPDF2 ? (
+                <p className=" pl-5 pr-10 text-xs pb-5 tracking-[0.10rem]">
+                  Please upload the file that has content that can be translated
+                  into standardized task activities. This can be a job
+                  description, course description, or your resume.
+                </p>
+              ) : null}
+              {queryJob2 ? (
+                <p className=" pl-5 pr-10  text-xs pb-5 tracking-[0.10rem]">
+                  Please input a job title to generate a list of its
+                  standardized task activities.
+                </p>
+              ) : null}
+              {queryHobbies2 ? (
+                <p className=" pl-5 pr-10 text-xs pb-5 tracking-[0.10rem]">
+                  Please input a list of hobbies and/or daily activities to
+                  generate a list of its standardized task activities.
+                </p>
+              ) : null}
             </div>
             {queryText2 ? (
-              <p className="pl-5 pr-10 text-xs pb-5 tracking-[0.10rem]">
-                Please submit the text you wish to convert into standardized
-                task activities. This can be a job description, course
-                description, or your resume content.
-              </p>
+              <div className="pr-10 pl-5 text-black w-full flex flex-col">
+                <textarea
+                  type="text"
+                  value={text2}
+                  className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
+                  placeholder="Type or paste your text here..."
+                  onChange={handleTextChange2}
+                ></textarea>
+              </div>
             ) : null}
             {queryURL2 ? (
-              <p className="pl-5 pr-10 text-xs pb-5 tracking-[0.10rem]">
-                Please submit the URL with content that can be translated into
-                standardized task activities. This can be a link to a job
-                description, course description, or your resume.
-              </p>
+              <div className="pr-10 pl-5 text-black flex flex-col">
+                <input
+                  // value={url}
+                  type="text"
+                  className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
+                  placeholder="Enter a URL here..."
+                  // onChange={handleURLChange}
+                ></input>
+              </div>
             ) : null}
             {queryPDF2 ? (
-              <p className=" pl-5 pr-10 text-xs pb-5 tracking-[0.10rem]">
-                Please upload the file that has content that can be translated
-                into standardized task activities. This can be a job
-                description, course description, or your resume.
-              </p>
+              <div className="pr-10 pl-5 text-black  flex flex-col">
+                <button
+                  // onClick={handleUpload}
+                  className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
+                >
+                  Select File Here
+                </button>
+                <input
+                  type="file"
+                  id="file"
+                  className="hidden"
+                  // onChange={handleChange}
+                  // onChange={handleFileChange}
+                  // ref={hiddenFileInput}
+                ></input>
+              </div>
             ) : null}
             {queryJob2 ? (
-              <p className=" pl-5 pr-10  text-xs pb-5 tracking-[0.10rem]">
-                Please input a job title to generate a list of its standardized
-                task activities.
-              </p>
-            ) : null}
+              <div className="pr-10 pl-5  text-black flex flex-col">
+                <input
+                  type="text"
+                  className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
+                  value={job2}
+                  onChange={handleJobChange2}
+                  placeholder="Enter a job title here..."
+                ></input>
+              </div>
+            ) : null}{" "}
             {queryHobbies2 ? (
-              <p className=" pl-5 pr-10 text-xs pb-5 tracking-[0.10rem]">
-                Please input a list of hobbies and/or daily activities to
-                generate a list of its standardized task activities.
-              </p>
+              <div className="pr-10 pl-5 text-black flex flex-col">
+                <textarea
+                  type="text"
+                  className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
+                  placeholder="List down your hobbies and/or daily activities"
+                  // value={hobbies}
+                  // onChange={handleHobbiesChange}
+                ></textarea>
+              </div>
             ) : null}
           </div>
-          {queryText2 ? (
-            <div className="pr-10 pl-5 text-black w-full flex flex-col">
-              <textarea
-                type="text"
-                value={text2}
-                className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
-                placeholder="Type or paste your text here..."
-                onChange={handleTextChange2}
-              ></textarea>
-            </div>
-          ) : null}
-          {queryURL2 ? (
-            <div className="pr-10 pl-5 text-black flex flex-col">
-              <input
-                // value={url}
-                type="text"
-                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
-                placeholder="Enter a URL here..."
-                // onChange={handleURLChange}
-              ></input>
-            </div>
-          ) : null}
-          {queryPDF2 ? (
-            <div className="pr-10 pl-5 text-black  flex flex-col">
-              <button
-                // onClick={handleUpload}
-                className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
-              >
-                Select File Here
-              </button>
-              <input
-                type="file"
-                id="file"
-                className="hidden"
-                // onChange={handleChange}
-                // onChange={handleFileChange}
-                // ref={hiddenFileInput}
-              ></input>
-            </div>
-          ) : null}
-          {queryJob2 ? (
-            <div className="pr-10 pl-5  text-black flex flex-col">
-              <input
-                type="text"
-                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
-                value={job2}
-                onChange={handleJobChange2}
-                placeholder="Enter a job title here..."
-              ></input>
-            </div>
-          ) : null}{" "}
-          {queryHobbies2 ? (
-            <div className="pr-10 pl-5 text-black flex flex-col">
-              <textarea
-                type="text"
-                className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
-                placeholder="List down your hobbies and/or daily activities"
-                // value={hobbies}
-                // onChange={handleHobbiesChange}
-              ></textarea>
-            </div>
-          ) : null}
         </div>
       </div>
-      {/* {compare ? (
-        <div role="status" className="w-full flex my-2 justify-center">
-          <svg
-            aria-hidden="true"
-            class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"
-            viewBox="0 0 100 101"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-              fill="currentColor"
-            />
-            <path
-              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-              fill="currentFill"
-            />
-          </svg>
-          <span class="sr-only">Loading...</span>
-        </div>
-      ) : (
-        <div className="w-full flex justify-center my-2 text-[#555555]">
-          <button
-            onClick={compareInputs}
-            className="tracking-[0.10rem] bg-[#474545] py-2 px-5 rounded-lg my-5 w-fit text-white"
-          >
-            Compare
-          </button>
-        </div>
-      )} */}
-      {/* <div className="w-full text-[#555555] flex my-2 justify-center ">
-        <button className="tracking-[0.10rem] bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white">
+      <div className="w-full text-[#555555] flex my-2 justify-center ">
+        <button
+          onClick={handleReset}
+          className="tracking-[0.10rem] bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
+        >
           Reset
         </button>
         <button
@@ -841,18 +830,26 @@ export default function Chat() {
         >
           Compare
         </button>
-        <button className="tracking-[0.10rem] bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white">
+        <button
+          onClick={handleSave}
+          className="tracking-[0.10rem] bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
+        >
           Save
         </button>
-      </div> */}
-
-      <div className="w-full bg-slate-100 flex flex-row text-[#555555]">
+      </div>
+      <div className="w-full bg-slate-100 flex flex-row pb-10 text-[#555555]">
         <div className="w-1/2 flex flex-col pl-10 pr-5">
+          {loaded ? (
+            <p className="py-2 font-semibold">Similar Tasks: </p>
+          ) : null}
           {similarTasks.map((iwa) => (
             <div key={iwa.id}>
               <p className="pb-2">{iwa}</p>
             </div>
-          ))}
+          ))}{" "}
+          {loaded ? (
+            <p className="py-2 font-semibold">Other Tasks from Input 1: </p>
+          ) : null}
           {differentTasks1.map((iwa) => (
             <div key={iwa.id}>
               <p className=" pb-2 bg-[#9CD1BC]">{iwa}</p>
@@ -860,11 +857,17 @@ export default function Chat() {
           ))}
         </div>
         <div className="w-1/2 flex flex-col pl-5 pr-10">
+          {loaded ? (
+            <p className="py-2 font-semibold">Similar Tasks: </p>
+          ) : null}
           {similarTasks.map((iwa) => (
             <div key={iwa.id}>
               <p className=" pb-2">{iwa}</p>
             </div>
           ))}
+          {loaded ? (
+            <p className="py-2 font-semibold">Other Tasks from Input 2: </p>
+          ) : null}
           {differentTasks2.map((iwa) => (
             <div key={iwa.id}>
               <p className="  pb-2 bg-[#F5D3CC]">{iwa}</p>

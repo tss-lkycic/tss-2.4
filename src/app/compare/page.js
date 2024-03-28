@@ -3,6 +3,7 @@
 import { useChat } from "ai/react";
 import new_logo from "/public/new_logo.svg";
 import compare_logo from "/public/compare.svg";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
@@ -45,8 +46,12 @@ export default function Chat() {
   const [d_score, setDScore] = useState(0);
   const responseRef = useRef(null);
   const [user, setUser] = useState(generateID);
-  const [loaded, setLoaded] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const [completed1, setCompleted1] = useState(false);
+  const [completed2, setCompleted2] = useState(false);
+  const [sentRequest, setSentRequest] = useState(false);
+  const [iwa1ID, setiwa1ID] = useState("");
+  const [iwa2ID, setiwa2ID] = useState("");
+
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
 
@@ -69,16 +74,17 @@ export default function Chat() {
 
   useEffect(() => {
     console.log("IWAs 1: ", IWAs1);
-    if (IWAs1.length > 0) {
-      console.log("got some result");
-      setLoaded(true);
-    } else setLoaded(false);
   }, [IWAs1]);
   useEffect(() => {
     console.log("IWAs 2: ", IWAs2);
     handleSplitTasks(IWAs1, IWAs2);
   }, [IWAs2]);
 
+  useEffect(() => {
+    if (completed1 === true && IWAs1.length > 0) {
+      queryInput2();
+    }
+  }, [completed1]);
   useEffect(() => {
     // Store the current response in a ref
     responseRef.current = response;
@@ -93,11 +99,14 @@ export default function Chat() {
       ) {
         // If response is stable and not empty, call fetchData
         console.log("This is the latest response:", response);
-
+        if (user === iwa1ID) {
+          console.log("this is for query 1");
+        } else console.log("this is for query 2");
+        setSentRequest(true);
         invokeTask(response);
         setTimeout(() => {
           getIWAs(response);
-        }, 500);
+        }, 4000);
       }
     }, 1000); // Adjust the delay time as needed
 
@@ -108,7 +117,7 @@ export default function Chat() {
   function generateID() {
     let id = "";
     const characters = "0123456789";
-    const length = 5;
+    const length = 8;
 
     for (let i = 0; i < length; i++) {
       const randomIndex = Math.floor(Math.random() * characters.length);
@@ -182,7 +191,11 @@ export default function Chat() {
     // setURL2("");
     setJob2("");
     generateID();
-    setLoaded(false);
+    setSimilarTasks([]);
+    setDifferentTasks1([]);
+    setDifferentTasks2([]);
+    setCompleted1(false);
+    setCompleted2(false);
   }
   function handleSave() {}
   function handleSelectInput1(value) {
@@ -299,9 +312,10 @@ export default function Chat() {
     }
   }
 
-  async function compareInputs() {
+  function compareInputs() {
+    console.log("querying first input");
     setInput1IWA(true);
-    // setCompare(true);
+    setiwa1ID(user);
     if (input1 === "Text") {
       getTasksFromText1();
     } else if (input1 === "URL") {
@@ -311,20 +325,23 @@ export default function Chat() {
     } else if (input1 === "Hobbies") {
       getTasksFromHobbies1();
     }
-    setTimeout(() => {
-      setUser(generateID());
-      setInput1IWA(false);
-      setInput2IWA(true);
-      if (input2 === "Text") {
-        getTasksFromText2();
-      } else if (input2 === "URL") {
-      } else if (input2 === "File") {
-      } else if (input2 === "Job") {
-        getTasksFromJob2();
-      } else if (input2 === "Hobbies") {
-        getTasksFromHobbies2();
-      }
-    }, 10000);
+  }
+  function queryInput2() {
+    console.log("querying second input");
+    const new_id = generateID();
+    setUser(new_id);
+    setiwa2ID(new_id);
+    setInput1IWA(false);
+    setInput2IWA(true);
+    if (input2 === "Text") {
+      getTasksFromText2();
+    } else if (input2 === "URL") {
+    } else if (input2 === "File") {
+    } else if (input2 === "Job") {
+      getTasksFromJob2();
+    } else if (input2 === "Hobbies") {
+      getTasksFromHobbies2();
+    }
   }
 
   function getTasksFromText1() {
@@ -400,12 +417,16 @@ export default function Chat() {
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
           processIWA(iwa_arr);
-        } else {
-          console.log("No tasks in queue. Exiting loop.");
+        } else if (iwa1ID === user) {
+          setCompleted1(true);
+          console.log("no more tasks for input 1");
+        } else if (iwa2ID === user) {
+          setCompleted2(true);
+          console.log("no more tasks for input 2");
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
-        await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
+        await new Promise((resolve) => setTimeout(resolve, 4000)); // 1 second delay
       }
     } catch (error) {
       console.error("Error:", error);
@@ -836,47 +857,48 @@ export default function Chat() {
         >
           Save
         </button>
-      </div>
-      <div className="w-full bg-slate-100 flex flex-row pb-10 text-[#555555]">
-        <div className="w-1/2 flex flex-col pl-10 pr-5">
-          {loaded ? (
+      </div>{" "}
+      {completed1 && completed2 && sentRequest ? (
+        <div className="w-full  flex flex-row pb-10 text-[#555555]">
+          <div className="w-1/2 flex flex-col pl-10 pr-5">
             <p className="py-2 font-semibold">Similar Tasks: </p>
-          ) : null}
-          {similarTasks.map((iwa) => (
-            <div key={iwa.id}>
-              <p className="pb-2">{iwa}</p>
-            </div>
-          ))}{" "}
-          {loaded ? (
+            {similarTasks.map((iwa) => (
+              <div key={iwa.id}>
+                <p className="pb-2">{iwa}</p>
+              </div>
+            ))}{" "}
             <p className="py-2 font-semibold">Other Tasks from Input 1: </p>
-          ) : null}
-          {differentTasks1.map((iwa) => (
-            <div key={iwa.id}>
-              <p className=" pb-2 bg-[#9CD1BC]">{iwa}</p>
-            </div>
-          ))}
-        </div>
-        <div className="w-1/2 flex flex-col pl-5 pr-10">
-          {loaded ? (
+            {differentTasks1.map((iwa) => (
+              <div key={iwa.id}>
+                <p className=" pb-2 bg-[#9CD1BC]">{iwa}</p>
+              </div>
+            ))}
+          </div>
+          <div className="w-1/2 flex flex-col pl-5 pr-10">
             <p className="py-2 font-semibold">Similar Tasks: </p>
-          ) : null}
-          {similarTasks.map((iwa) => (
-            <div key={iwa.id}>
-              <p className=" pb-2">{iwa}</p>
-            </div>
-          ))}
-          {loaded ? (
+
+            {similarTasks.map((iwa) => (
+              <div key={iwa.id}>
+                <p className=" pb-2">{iwa}</p>
+              </div>
+            ))}
+
             <p className="py-2 font-semibold">Other Tasks from Input 2: </p>
-          ) : null}
-          {differentTasks2.map((iwa) => (
-            <div key={iwa.id}>
-              <p className="  pb-2 bg-[#F5D3CC]">{iwa}</p>
-            </div>
-          ))}
+
+            {differentTasks2.map((iwa) => (
+              <div key={iwa.id}>
+                <p className="  pb-2 bg-[#F5D3CC]">{iwa}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      {/* <p className="text-3xl font-bold mb-2">Similar Tasks: {s_score}%</p> */}
-      {/* <p className="text-3xl font-bold mb-2">Task Gap: {d_score}%</p> */}
+      ) : (
+        sentRequest && (
+          <div className="w-full flex justify-center pb-10">
+            <CircularProgress />
+          </div>
+        )
+      )}
     </div>
   );
 }

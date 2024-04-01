@@ -7,6 +7,7 @@ import translate from "/public/translate.svg";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import OpenAI from "openai";
+import CircularProgress from "@mui/material/CircularProgress";
 import html2canvas from "html2canvas";
 
 export default function Chat() {
@@ -27,6 +28,8 @@ export default function Chat() {
   const [IWAs, setIWAs] = useState([]);
   const responseRef = useRef(null);
   const [user, setUser] = useState(generateID());
+  const [completed, setCompleted] = useState(false);
+  const [sentRequest, setSentRequest] = useState(false);
 
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
@@ -68,9 +71,9 @@ export default function Chat() {
         invokeTask(response);
         setTimeout(() => {
           getIWAs(response);
-        }, 2000);
+        }, 4000);
       }
-    }, 500); // Adjust the delay time as needed
+    }, 1000); // Adjust the delay time as needed
 
     // Cleanup the timeout if response changes before the delay ends
     return () => clearTimeout(timeout);
@@ -79,7 +82,7 @@ export default function Chat() {
   function generateID() {
     let id = "";
     const characters = "0123456789";
-    const length = 5;
+    const length = 7;
 
     for (let i = 0; i < length; i++) {
       const randomIndex = Math.floor(Math.random() * characters.length);
@@ -138,6 +141,7 @@ export default function Chat() {
   };
 
   function handleGenerate() {
+    setSentRequest(true);
     if (inputtype === "Text") {
       getTasksFromText();
     } else if (inputtype === "URL") {
@@ -175,6 +179,8 @@ export default function Chat() {
     setURL("");
     setJob("");
     generateID();
+    setCompleted(false);
+    setSentRequest(false);
   }
   function handleFileChange(e) {
     console.log(e.target);
@@ -242,6 +248,7 @@ export default function Chat() {
           const iwa_arr = JSON.parse(iwas);
           processIWA(iwa_arr);
         } else {
+          setCompleted(true);
           console.log("No tasks in queue. Exiting loop.");
         }
 
@@ -526,6 +533,11 @@ export default function Chat() {
 
         <div className="flex flex-col w-1/2 h-full p-5">
           <div className="w-full h-2/5 "></div>
+          {!completed && sentRequest && (
+            <div className="w-full  flex">
+              <CircularProgress color="inherit" />
+            </div>
+          )}
           <div className="w-full h-3/5 pb-10">
             {IWAs.map((iwa) => (
               <div className="flex flex-row items-center" key={iwa.id}>

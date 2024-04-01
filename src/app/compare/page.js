@@ -231,6 +231,8 @@ export default function Chat() {
       setQueryJob1(false);
       setQueryHobbies1(true);
     }
+    setIWAs([]);
+    setUser(generateID());
   }
   function handleSelectInput2(value) {
     setInput2(value);
@@ -265,6 +267,8 @@ export default function Chat() {
       setQueryJob2(false);
       setQueryHobbies2(true);
     }
+    setIWAs([]);
+    setUser(generateID());
   }
 
   function handleJobChange1(e) {

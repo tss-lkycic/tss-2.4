@@ -248,8 +248,12 @@ export default function Chat() {
           const iwa_arr = JSON.parse(iwas);
           processIWA(iwa_arr);
         } else {
-          setCompleted(true);
           console.log("No tasks in queue. Exiting loop.");
+          console.log("process remainder");
+          const iwas = data.body;
+          const iwa_arr = JSON.parse(iwas);
+          processIWA(iwa_arr);
+          setCompleted(true);
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
@@ -316,8 +320,10 @@ export default function Chat() {
     append({
       role: "user",
       content:
+        // userHobbies +
+        "For each hobby or daily activity in this list:" +
         userHobbies +
-        "Based on this list of activities, create some possible tasks for each activity in sentences and return them such that each task is numbered. ",
+        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
     });
   }
 

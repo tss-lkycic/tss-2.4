@@ -422,9 +422,17 @@ export default function Chat() {
           const iwa_arr = JSON.parse(iwas);
           processIWA(iwa_arr);
         } else if (iwa1ID === user) {
+          const iwas = data.body;
+          const iwa_arr = JSON.parse(iwas);
+          processIWA(iwa_arr);
+
           setCompleted1(true);
           console.log("no more tasks for input 1");
         } else if (iwa2ID === user) {
+          const iwas = data.body;
+          const iwa_arr = JSON.parse(iwas);
+          processIWA(iwa_arr);
+
           setCompleted2(true);
           console.log("no more tasks for input 2");
         }

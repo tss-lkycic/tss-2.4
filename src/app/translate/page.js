@@ -71,9 +71,9 @@ export default function Chat() {
         invokeTask(response);
         setTimeout(() => {
           getIWAs(response);
-        }, 4000);
+        }, 3000);
       }
-    }, 1000); // Adjust the delay time as needed
+    }, 1500); // Adjust the delay time as needed
 
     // Cleanup the timeout if response changes before the delay ends
     return () => clearTimeout(timeout);

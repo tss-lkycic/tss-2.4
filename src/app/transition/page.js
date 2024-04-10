@@ -30,10 +30,19 @@ export default function Chat() {
   const [part2, setPart2] = useState(false);
   const [part3, setPart3] = useState(false);
   const [part4, setPart4] = useState(false);
+  const [final, setFinal] = useState(false);
   const [moreTasks, setMoreTasks] = useState("");
   const [newIWAs, setNewIWAs] = useState([]);
   const [part1IWA, setPart1IWA] = useState([]);
   const [part2IWA, setPart2IWA] = useState([]);
+  const [part3IWA, setPart3IWA] = useState([]);
+  const [considerations, setConsiderations] = useState([]);
+  const [getAdjacent, setGetAdjacent] = useState(false);
+  const [getEmerging, setGetEmerging] = useState(false);
+  const [getGig, setGetGig] = useState(false);
+  const [adjacentJobs, setAdjacentJobs] = useState([]);
+  const [emergingJobs, setEmergingJobs] = useState([]);
+  const [gigJobs, setGigJobs] = useState([]);
 
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
@@ -54,10 +63,6 @@ export default function Chat() {
     }
   }, [messages]);
 
-  //   const openai = new OpenAI({
-  //     apiKey: process.env.OPENAI_API_KEY,
-  //   });
-
   useEffect(() => {
     console.log(IWAs);
     if (part1 === true) {
@@ -75,6 +80,26 @@ export default function Chat() {
   }, [IWAs]);
 
   useEffect(() => {
+    if (adjacentJobs.length > 0 && part4 === true) {
+      console.log("hello 1");
+      generateEmergingJobs();
+    }
+  }, [getAdjacent]);
+  useEffect(() => {
+    if (getEmerging === false && part4 === true) {
+      console.log("hello 2");
+      generateGigJobs();
+    }
+  }, [getEmerging]);
+
+  useEffect(() => {
+    if (getGig === false && part4 === true) {
+      console.log("hello 3");
+      setPart4(false);
+      setFinal(true);
+    }
+  }, [getGig]);
+  useEffect(() => {
     // Store the current response in a ref
     responseRef.current = response;
 
@@ -88,10 +113,25 @@ export default function Chat() {
       ) {
         // If response is stable and not empty, call fetchData
         console.log("This is the latest response:", response);
-        invokeTask(response);
-        setTimeout(() => {
-          getIWAs(response);
-        }, 4000);
+        if (getAdjacent === true) {
+          console.log("helloooooo");
+          setAdjacentJobs(response);
+          setGetAdjacent(false);
+          setGetEmerging(true);
+        } else if (getEmerging === true) {
+          setEmergingJobs(response);
+          setGetEmerging(false);
+
+          setGetGig(true);
+        } else if (getGig === true) {
+          setGigJobs(response);
+          setGetGig(false);
+        } else if (part4 === false) {
+          invokeTask(response);
+          setTimeout(() => {
+            getIWAs(response);
+          }, 3000);
+        }
       }
     }, 1500); // Adjust the delay time as needed
 
@@ -141,9 +181,13 @@ export default function Chat() {
   }
 
   function handleNext2() {
-    setPart2IWA([...newIWAs, ...part1IWA]);
+    const combinedIWAs = new Set([...newIWAs, ...part1IWA]);
+    const uniqueIWAs = Array.from(combinedIWAs);
+    setPart2IWA(uniqueIWAs);
     setPart2(false);
     setPart3(true);
+    console.log(part1IWA.length, "p1 length");
+    console.log(part2IWA.length, "p2 length");
   }
   function handleNext3() {
     const userHobby = hobbies;
@@ -156,7 +200,11 @@ export default function Chat() {
         ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
     });
   }
-  function handleNext4() {}
+  function handleNext4() {
+    setGetAdjacent(true);
+    generateAdjacentJobs();
+    // setFinal(true);
+  }
 
   function handleSavePart1IWAs() {
     setPart1(false);
@@ -173,16 +221,32 @@ export default function Chat() {
       setIWAs([]);
     }, 3000);
   }
+
+  function handleAddPart3IWAs() {
+    // setNewIWAs(IWAs)
+    // setNewIWAs([...newIWAs, ...IWAs]);
+    const combinedIWAs = new Set([...part2IWA, ...IWAs]);
+    const uniqueIWAs = Array.from(combinedIWAs);
+    setPart3IWA(uniqueIWAs);
+
+    console.log(part2IWA.length, "p2 length");
+    console.log(part3IWA.length, "p3 length");
+    setPart3(false);
+    setPart4(true);
+    setTimeout(() => {
+      setIWAs([]);
+    }, 3000);
+  }
   const hiddenFileInput = useRef(null);
 
   const handleUpload = (event) => {
     hiddenFileInput.current.click();
   };
 
-  const [fileContents, setFileContents] = useState("");
-  const [assistantThreadId, setAssistantThreadId] = useState("");
-  const [conversation, setConversation] = useState([]);
-  const [pdfDataUrl, setPdfDataUrl] = useState(null);
+  //   const [fileContents, setFileContents] = useState("");
+  //   const [assistantThreadId, setAssistantThreadId] = useState("");
+  //   const [conversation, setConversation] = useState([]);
+  //   const [pdfDataUrl, setPdfDataUrl] = useState(null);
 
   async function handleChange(event) {
     const fileUploaded = event.target.files[0];
@@ -261,6 +325,16 @@ export default function Chat() {
         "Extract and summarise the tasks from the prior text into a set of sentences and return them such that each task is numbered. ",
     });
   }
+
+  const toggleConsideration = (word) => {
+    if (considerations.includes(word)) {
+      // If the word is already in the array, remove it
+      setConsiderations(considerations.filter((item) => item !== word));
+    } else {
+      // If the word is not in the array, add it
+      setConsiderations([...considerations, word]);
+    }
+  };
 
   function processIWA(array) {
     let iwa_list = [];
@@ -342,6 +416,11 @@ export default function Chat() {
               handleAddPart2IWAs();
             }, 3000);
           }
+          if (part3 === true) {
+            setTimeout(() => {
+              handleAddPart3IWAs();
+            }, 3000);
+          }
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
@@ -351,7 +430,44 @@ export default function Chat() {
       console.error("Error:", error);
     }
   }
+  function generateAdjacentJobs() {
+    const tasks = part3IWA;
+    append({
+      role: "user",
+      content:
+        "Given the following list of general tasks and considerations, tasks:" +
+        tasks +
+        "considerations," +
+        considerations +
+        "return only, a numbered list of the top possible jobs suitable for this person, without any descriptions, just the job titles e.g. Frontend Developer.",
+    });
+  }
 
+  function generateEmergingJobs() {
+    const tasks = part3IWA;
+    append({
+      role: "user",
+      content:
+        "Given the following list of general tasks and considerations, tasks:" +
+        tasks +
+        "considerations," +
+        considerations +
+        "return only, a numbered list of the top emerging jobs that is suitable for this person, without any descriptions, just the job titles e.g. Data Scientist.",
+    });
+  }
+
+  function generateGigJobs() {
+    const tasks = part3IWA;
+    append({
+      role: "user",
+      content:
+        "Given the following list of general tasks and considerations, tasks:" +
+        tasks +
+        "considerations," +
+        considerations +
+        "return only, a numbered list of the possible gig jobs or internships suitable for this person, without any descriptions, just the job titles e.g. UIUX Intern.",
+    });
+  }
   const downloadImage = async () => {
     const resultsDiv = document.getElementById("results");
 
@@ -398,10 +514,17 @@ export default function Chat() {
         <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
         <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
       </div>
-
-      <div className="flex flex-row w-full h-full  text-[#555555] ">
-        <div className="flex flex-col w-1/2 h-full  tracking-[0.10rem]">
-          <div className="w-full h-2/5">
+      <div
+        className={`flex flex-row w-full  ${
+          final ? "h-2/5" : "h-full"
+        } text-[#555555] `}
+      >
+        <div
+          className={`flex flex-col w-1/2 ${
+            final ? "h-full" : "h-full "
+          } tracking-[0.10rem]`}
+        >
+          <div className={`w-full h-2/5  ${final ? "h-full" : "h-2/5"}`}>
             <div className="px-10 pt-5 w-2/3">
               <div className="flex flex-row items-center py-2 font-medium">
                 <Image
@@ -453,12 +576,17 @@ export default function Chat() {
               </div>
             ) : null}
             {part4 ? (
-              <div className="flex flex-row px-10 text-xs py-5 font-semibold">
+              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
                 <p>4. </p>
                 <p className=" ">
-                  Are there anything you want to add? (Placeholder for
-                  life-balance indicator)
+                  Would you like the transitions to reflect any special
+                  circumstances?
                 </p>
+              </div>
+            ) : null}
+            {final ? (
+              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
+                <p className=" ">Here are your transitions.</p>
               </div>
             ) : null}
           </div>
@@ -502,6 +630,70 @@ export default function Chat() {
               ></textarea>
             </div>
           ) : null}
+          {part4 ? (
+            <div className="px-10 gap-2 text-xs text-white flex flex-row flex-wrap mt-5 mb-10">
+              <button
+                className={`px-2 py-1  w-fit tracking-[0.10rem] rounded-md ${
+                  considerations.includes("Flexible Work Schedule")
+                    ? "bg-[#474545]"
+                    : "bg-[#9F9E9E]"
+                }`}
+                onClick={() => toggleConsideration("Flexible Work Schedule")}
+              >
+                Flexible Work Schedule
+              </button>
+              <button
+                className={`px-2 py-1  w-fit tracking-[0.10rem] rounded-md ${
+                  considerations.includes("Workplace Inclusivity")
+                    ? "bg-[#474545]"
+                    : "bg-[#9F9E9E]"
+                }`}
+                onClick={() => toggleConsideration("Workplace Inclusivity")}
+              >
+                Workplace Inclusivity
+              </button>
+              <button
+                className={`px-2 py-1  w-fit tracking-[0.10rem] rounded-md ${
+                  considerations.includes("Remote Work")
+                    ? "bg-[#474545]"
+                    : "bg-[#9F9E9E]"
+                }`}
+                onClick={() => toggleConsideration("Remote Work")}
+              >
+                Remote Work
+              </button>
+              <button
+                className={`px-2 py-1  w-fit tracking-[0.10rem] rounded-md ${
+                  considerations.includes("Accessibility Constraints")
+                    ? "bg-[#474545]"
+                    : "bg-[#9F9E9E]"
+                }`}
+                onClick={() => toggleConsideration("Accessibility Constraints")}
+              >
+                Accessibility Constraints
+              </button>
+              <button
+                className={`px-2 py-1  w-fit tracking-[0.10rem] rounded-md ${
+                  considerations.includes("Health Considerations")
+                    ? "bg-[#474545]"
+                    : "bg-[#9F9E9E]"
+                }`}
+                onClick={() => toggleConsideration("Health Considerations")}
+              >
+                Health Considerations
+              </button>
+              <button
+                className={`px-2 py-1  w-fit tracking-[0.10rem] rounded-md ${
+                  considerations.includes("Life Transition")
+                    ? "bg-[#474545]"
+                    : "bg-[#9F9E9E]"
+                }`}
+                onClick={() => toggleConsideration("Life Transition")}
+              >
+                Life Transition
+              </button>
+            </div>
+          ) : null}
 
           {/* <div className="px-10 py-10 text-black  flex flex-col">
             <button
@@ -523,25 +715,31 @@ export default function Chat() {
             <div className="w-full flex justify-end px-10">
               <button
                 onClick={handleAdd}
-                className=" bg-[#737171] py-1 px-12 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
+                className=" bg-[#737171] text-xs py-1 px-10 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
               >
                 Add
               </button>
             </div>
           ) : null}
 
-          <div className="w-full">
-            <button
-              onClick={handleNext}
-              className=" bg-[#474545] py-1 px-12 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
-            >
-              Next
-            </button>
-          </div>
+          {final ? null : (
+            <div className="w-full">
+              <button
+                onClick={handleNext}
+                className=" bg-[#474545] text-xs py-1 px-10 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-col w-1/2 h-full p-5">
-          <div className="w-full h-2/5 "></div>
+        <div
+          className={`flex flex-col w-1/2 ${
+            final ? "h-full" : "h-2/5"
+          } tracking-[0.10rem] `}
+        >
+          <div className={`w-full   h-full`}></div>
           {/* {!completed && sentRequest && (
             <div className="w-full  flex">
               <CircularProgress color="inherit" />
@@ -568,6 +766,52 @@ export default function Chat() {
           )}
         </div>
       </div>
+      {final ? (
+        <div className=" w-full h-fit text-black tracking-[0.1rem]">
+          <div className="flex flex-row">
+            <div className="flex flex-col w-1/3 pl-10">
+              <p className="font-semibold mb-5">Adjacent Job Titles</p>
+              {adjacentJobs.map((j) => (
+                <div className="flex flex-row items-center" key={j.id}>
+                  <p className=" pb-2 tracking-[0.10rem]">{j}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col w-1/3 px-5">
+              <p className="font-semibold mb-5">Emerging Job Titles</p>
+              {emergingJobs.map((j) => (
+                <div className="flex flex-row items-center" key={j.id}>
+                  <p className=" pb-2 tracking-[0.10rem]">{j}</p>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col w-1/3 pr-10">
+              <p className="font-semibold mb-5">
+                Gigwork/Internship Job Titles
+              </p>
+              {gigJobs.map((j) => (
+                <div className="flex flex-row items-center" key={j.id}>
+                  <p className=" pb-2 tracking-[0.10rem]">{j}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {final ? (
+        <div className="w-full flex flex-row justify-center">
+          <button
+            // onClick={generateAdjacentJobs}
+            className=" bg-[#474545] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
+          >
+            Save
+          </button>
+          <button className=" bg-[#737171] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10">
+            Restart
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

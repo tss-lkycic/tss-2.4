@@ -27,7 +27,7 @@ export default function Chat() {
   const [response, setResponse] = useState([]);
   const [IWAs, setIWAs] = useState([]);
   const responseRef = useRef(null);
-  //   const [openai, setOpenai] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(generateID());
   const [part1, setPart1] = useState(true);
   const [part2, setPart2] = useState(false);
@@ -114,6 +114,7 @@ export default function Chat() {
       setPart3IWA(uniqueIWAs);
 
       setPart3(false);
+      setLoading(false);
       setPart4(true);
       setTimeout(() => {
         setIWAs([]);
@@ -140,6 +141,7 @@ export default function Chat() {
     if (getGig === false && part4 === true) {
       console.log("hello 3");
       setPart4(false);
+      setLoading(false);
       setFinal(true);
     }
   }, [getGig]);
@@ -208,6 +210,7 @@ export default function Chat() {
   }
 
   function handleNext1() {
+    setLoading(true);
     console.log("these are the jobs inputted: ", job);
     console.log("this is the resume: ", text);
 
@@ -242,6 +245,7 @@ export default function Chat() {
   //     console.log(part2IWA.length, "p2 length");
   //   }
   function handleNext3() {
+    setLoading(true);
     const userHobby = hobbies;
     append({
       role: "user",
@@ -253,6 +257,7 @@ export default function Chat() {
     });
   }
   function handleNext4() {
+    setLoading(true);
     setGetAdjacent(true);
     generateAdjacentJobs();
     // setFinal(true);
@@ -260,6 +265,7 @@ export default function Chat() {
 
   function handleSavePart1IWAs() {
     setPart1(false);
+    setLoading(false);
     setPart3(true);
     setTimeout(() => {
       setIWAs([]);
@@ -569,6 +575,7 @@ export default function Chat() {
       // Optional: Add a delay between API calls to avoid flooding the server
       // await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
       //   }
+      setLoading(false);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -654,6 +661,7 @@ export default function Chat() {
   }
 
   function handleCompareGenJob() {
+    setLoading(true);
     getTasksFromGenJob();
   }
 
@@ -898,35 +906,13 @@ export default function Chat() {
         </div>
 
         <div
-          className={`flex flex-col w-1/2 ${
-            final ? "h-full" : "h-2/5"
-          } tracking-[0.10rem] `}
+          //   className={`flex flex-col w-1/2 bg-black ${
+          //     final ? "h-full" : "h-2/5"
+          //   } tracking-[0.10rem] `}
+          className="flex flex-col w-1/2 justify-center items-center
+           tracking-[0.10rem] h-full"
         >
-          <div className={`w-full   h-full`}></div>
-          {/* {!completed && sentRequest && (
-            <div className="w-full  flex">
-              <CircularProgress color="inherit" />
-            </div>
-          )} */}
-          {/* {part2 && (
-            <div className="w-full h-3/5 pb-10">
-              {part1IWA.map((p1iwa) => (
-                <div className="flex flex-row items-center" key={p1iwa.id}>
-                  <p className="ml-2 pb-2 tracking-[0.10rem]">{p1iwa}</p>
-                </div>
-              ))}
-              {newIWAs.length > 0 && (
-                <div className="mt-[1rem]">
-                  <p>New Standard Work Activities</p>
-                  {newIWAs.map((niwa) => (
-                    <div className="flex flex-row items-center" key={niwa.id}>
-                      <p className="ml-2 pb-2 tracking-[0.10rem]">{niwa}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )} */}
+          {loading ? <CircularProgress color="inherit" /> : null}
         </div>
       </div>
       {final ? (
@@ -1038,6 +1024,11 @@ export default function Chat() {
                   Save
                 </button>
               </div>
+              {loading ? (
+                <div className="flex w-full text-gray-400 fill-gray-300 items-center justify-center">
+                  <CircularProgress color="inherit" />
+                </div>
+              ) : null}
               <div className="w-full flex font-semibold  text-black flex-row mt-[2rem] justify-between  mb-[1rem]">
                 <p className=" ">Similar Tasks: {same} %</p>
                 <div className="flex flex-row">

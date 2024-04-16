@@ -9,15 +9,18 @@ import Image from "next/image";
 // import { writeFile } from "fs/promises";
 // import { createReadStream } from "fs";
 import { useEffect, useState, useRef } from "react";
-
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CircularProgress from "@mui/material/CircularProgress";
 import html2canvas from "html2canvas";
+import { common } from "@mui/material/colors";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
     useChat();
 
   const [job, setJob] = useState("");
+  const [genjob, setGenJob] = useState("");
+  const [genjobIWA, setGenJobIWA] = useState([]);
   const [hobbies, setHobbies] = useState("");
   const [text, setText] = useState("");
 
@@ -43,6 +46,10 @@ export default function Chat() {
   const [adjacentJobs, setAdjacentJobs] = useState([]);
   const [emergingJobs, setEmergingJobs] = useState([]);
   const [gigJobs, setGigJobs] = useState([]);
+  const [same, setSame] = useState("-");
+  const [same_list, setSameList] = useState([]);
+  const [diff, setDiff] = useState("-");
+  const [diff_list, setDiffList] = useState([]);
 
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
@@ -64,20 +71,57 @@ export default function Chat() {
   }, [messages]);
 
   useEffect(() => {
-    console.log(IWAs);
+    console.log("iwas", IWAs);
     if (part1 === true) {
       setTimeout(() => {
         setPart1IWA(IWAs);
         console.log(part1IWA, "hello iwas from part 1");
       }, 200);
-    } else if (part2 === true && IWAs.length > 0) {
-      //   setNewIWAs([...newIWAs, ...IWAs]);
+    }
+    //  else if (part2 === true && IWAs.length > 0) {
+    //   //   setNewIWAs([...newIWAs, ...IWAs]);
+    //   setTimeout(() => {
+    //     setNewIWAs(IWAs);
+    //     console.log(newIWAs, "hello new iwas");
+    //   }, 200);
+    // }
+    if (part3 === true) {
       setTimeout(() => {
-        setNewIWAs(IWAs);
-        console.log(newIWAs, "hello new iwas");
+        const newiwa = IWAs;
+        setNewIWAs(newiwa);
+        console.log(newiwa, "hello new iwas from part 3");
+      }, 200);
+    }
+    if (final === true && IWAs.length > 0) {
+      setTimeout(() => {
+        console.log("genjobiwa", IWAs);
+        // const newiwa = IWAs;
+        // setGenJobIWA(newiwa);
+        getSimilar();
       }, 200);
     }
   }, [IWAs]);
+
+  //   useEffect(() => {
+  //     if (genjobIWA.length > 0) {
+  //     // ("heloooooooo");
+  //     }
+  //   }, [genjobIWA]);
+  useEffect(() => {
+    if (newIWAs.length > 0) {
+      const combinedIWAs = new Set([...part1IWA, ...newIWAs]);
+      const uniqueIWAs = Array.from(combinedIWAs);
+      setPart3IWA(uniqueIWAs);
+
+      setPart3(false);
+      setPart4(true);
+      setTimeout(() => {
+        setIWAs([]);
+      }, 3000);
+    }
+  }, [newIWAs]);
+
+  const dummy = ["job1", "job2", "job3"];
 
   useEffect(() => {
     if (adjacentJobs.length > 0 && part4 === true) {
@@ -155,7 +199,7 @@ export default function Chat() {
     if (part1 === true) {
       handleNext1();
     } else if (part2 === true) {
-      handleNext2();
+      //   handleNext2();
     } else if (part3 === true) {
       handleNext3();
     } else if (part4 === true) {
@@ -180,15 +224,23 @@ export default function Chat() {
     });
   }
 
-  function handleNext2() {
-    const combinedIWAs = new Set([...newIWAs, ...part1IWA]);
-    const uniqueIWAs = Array.from(combinedIWAs);
-    setPart2IWA(uniqueIWAs);
-    setPart2(false);
-    setPart3(true);
-    console.log(part1IWA.length, "p1 length");
-    console.log(part2IWA.length, "p2 length");
+  function restartCompare() {
+    setSame("-");
+    setDiff("-");
+    setGenJob("");
+    setSameList([]);
+    setDiffList([]);
   }
+
+  //   function handleNext2() {
+  //     const combinedIWAs = new Set([...newIWAs, ...part1IWA]);
+  //     const uniqueIWAs = Array.from(combinedIWAs);
+  //     setPart2IWA(uniqueIWAs);
+  //     setPart2(false);
+  //     setPart3(true);
+  //     console.log(part1IWA.length, "p1 length");
+  //     console.log(part2IWA.length, "p2 length");
+  //   }
   function handleNext3() {
     const userHobby = hobbies;
     append({
@@ -208,35 +260,48 @@ export default function Chat() {
 
   function handleSavePart1IWAs() {
     setPart1(false);
-    setPart2(true);
+    setPart3(true);
     setTimeout(() => {
       setIWAs([]);
     }, 3000);
   }
 
-  function handleAddPart2IWAs() {
-    // setNewIWAs(IWAs)
-    // setNewIWAs([...newIWAs, ...IWAs]);
-    setTimeout(() => {
-      setIWAs([]);
-    }, 3000);
-  }
+  //   function handleAddPart2IWAs() {
+  //     // setNewIWAs(IWAs)
+  //     // setNewIWAs([...newIWAs, ...IWAs]);
+  //     setTimeout(() => {
+  //       setIWAs([]);
+  //     }, 3000);
+  //   }
 
-  function handleAddPart3IWAs() {
-    // setNewIWAs(IWAs)
-    // setNewIWAs([...newIWAs, ...IWAs]);
-    const combinedIWAs = new Set([...part2IWA, ...IWAs]);
-    const uniqueIWAs = Array.from(combinedIWAs);
-    setPart3IWA(uniqueIWAs);
+  //   function handleAddPart3IWAs() {
+  //     // setNewIWAs(IWAs)
+  //     // setNewIWAs([...newIWAs, ...IWAs]);
 
-    console.log(part2IWA.length, "p2 length");
-    console.log(part3IWA.length, "p3 length");
-    setPart3(false);
-    setPart4(true);
-    setTimeout(() => {
-      setIWAs([]);
-    }, 3000);
-  }
+  //     console.log(part1IWA, "og iwa");
+  //     console.log(IWAs, "new iwa");
+  //     console.log(newIWAs, "newiwa");
+  //     const combinedIWAs = new Set([...part1IWA, ...newIWAs]);
+  //     const uniqueIWAs = Array.from(combinedIWAs);
+  //     setPart3IWA(uniqueIWAs);
+
+  //     setPart3(false);
+  //     setPart4(true);
+  //     setTimeout(() => {
+  //       setIWAs([]);
+  //     }, 3000);
+  //   }
+  //   function handleGetFinalIWAs() {
+  //     // const jobbiwa = IWAs;
+  //     // console.log("new job iwas1", IWAs);
+  //     // console.log("new job iwas2", jobbiwa);
+  //     // setGenJobIWA(jobbiwa);
+  //     setTimeout(() => {
+  //       //   getSimilar(jobbiwa);
+  //       getSimilar();
+  //     }, 3000);
+  //   }
+
   const hiddenFileInput = useRef(null);
 
   const handleUpload = (event) => {
@@ -293,6 +358,10 @@ export default function Chat() {
   function handleJobChange(e) {
     const jobName = e.target.value;
     setJob(jobName);
+  }
+  function handleGenJobChange(e) {
+    const genjobName = e.target.value;
+    setGenJob(genjobName);
   }
 
   function handleTextChange(e) {
@@ -411,16 +480,26 @@ export default function Chat() {
               handleSavePart1IWAs();
             }, 3000);
           }
-          if (part2 === true) {
-            setTimeout(() => {
-              handleAddPart2IWAs();
-            }, 3000);
-          }
-          if (part3 === true) {
-            setTimeout(() => {
-              handleAddPart3IWAs();
-            }, 3000);
-          }
+          //   if (part2 === true) {
+          //     setTimeout(() => {
+          //       handleAddPart2IWAs();
+          //     }, 3000);
+          //   }
+          //   if (part3 === true) {
+          //     setTimeout(() => {
+          //       handleAddPart3IWAs();
+          //     }, 4000);
+          //   }
+          //   if (part4 === true) {
+          //     setTimeout(() => {
+          //       handleAddPart3IWAs();
+          //     }, 3000);
+          //   }
+          //   if (final === true) {
+          //     setTimeout(() => {
+          //       getSimilar();
+          //     }, 5000);
+          //   }
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
@@ -430,6 +509,71 @@ export default function Chat() {
       console.error("Error:", error);
     }
   }
+
+  async function getSimilar() {
+    try {
+      //   let noOfTasksInQueue = Infinity; // Set initially to a large number
+      //   while (noOfTasksInQueue > 0) {
+      const requestData = {
+        user_id: user,
+        job_a: part3IWA,
+        job_b: IWAs,
+      };
+
+      console.log(requestData);
+
+      const response = await fetch("/api/compare", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+      });
+      const data = await response.json();
+      let same_arr = [];
+      let diff_arr = [];
+      console.log("Response from compare API:", data);
+      const common = data.common_iwa_count;
+      const train = data.count_iwa_b - common;
+      const common_p = ((common * 100) / data.count_iwa_b).toFixed(2);
+      const train_p = ((train * 100) / data.count_iwa_b).toFixed(2);
+      setSame(common_p);
+      setDiff(train_p);
+
+      data["Feature Importance"].forEach((obj) => {
+        if (obj.Common_IWA === 1) {
+          same_arr.push({
+            title: obj["IWA Title"],
+            importance: obj.Feature_importance,
+          });
+        } else {
+          diff_arr.push({
+            title: obj["IWA Title"],
+            importance: obj.Feature_importance,
+          });
+        }
+      });
+
+      // Sort the arrays based on Feature_importance score in descending order
+      same_arr.sort((a, b) => b.importance - a.importance);
+      diff_arr.sort((a, b) => b.importance - a.importance);
+
+      // Extract only the titles from the sorted arrays
+      same_arr = same_arr.map((item) => item.title);
+      diff_arr = diff_arr.map((item) => item.title);
+
+      setSameList(same_arr);
+      setDiffList(diff_arr);
+      // console.log("checking:", data["Feature Importance"]);
+
+      // Optional: Add a delay between API calls to avoid flooding the server
+      // await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
+      //   }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
   function generateAdjacentJobs() {
     const tasks = part3IWA;
     append({
@@ -468,6 +612,9 @@ export default function Chat() {
         "return only, a numbered list of the possible gig jobs or internships suitable for this person, without any descriptions, just the job titles e.g. UIUX Intern.",
     });
   }
+  function restartPage() {
+    location.reload();
+  }
   const downloadImage = async () => {
     const resultsDiv = document.getElementById("results");
 
@@ -493,6 +640,22 @@ export default function Chat() {
       console.error("Error capturing image:", error);
     }
   };
+
+  function getTasksFromGenJob() {
+    const userJob = genjob;
+    append({
+      role: "user",
+      content:
+        "Create a list of tasks for the job," +
+        userJob +
+        "," +
+        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
+    });
+  }
+
+  function handleCompareGenJob() {
+    getTasksFromGenJob();
+  }
 
   function getTasksFromText() {
     const userText = text;
@@ -547,16 +710,16 @@ export default function Chat() {
               </p>
             </div>
             {part1 ? (
-              <div className="flex flex-row px-10 text-xs py-5 font-semibold">
+              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
                 <p>1. </p>
                 <p className=" ">
-                  Please list down your current and previous jobs.
-                  Alternatively, you can upload your CV.
+                  Please list down your current and previous jobs. You may also
+                  paste your text CV.
                 </p>
               </div>
             ) : null}
-            {part2 ? (
-              <div className="flex flex-row px-10 text-xs py-5 font-semibold">
+            {/* {part2 ? (
+              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
                 <p>2. </p>
                 <p className=" ">
                   The list of standardized task activities are generated based
@@ -565,10 +728,10 @@ export default function Chat() {
                   proceed to the next step.
                 </p>
               </div>
-            ) : null}
+            ) : null} */}
             {part3 ? (
-              <div className="flex flex-row px-10 text-xs py-5 font-semibold">
-                <p>3. </p>
+              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
+                <p>2. </p>
                 <p className=" ">
                   List down your hobbies and leisure activities that you wish to
                   translate to your potential career paths.
@@ -577,7 +740,7 @@ export default function Chat() {
             ) : null}
             {part4 ? (
               <div className="flex flex-row px-10 text-sm py-5 font-semibold">
-                <p>4. </p>
+                <p>3. </p>
                 <p className=" ">
                   Would you like the transitions to reflect any special
                   circumstances?
@@ -608,7 +771,7 @@ export default function Chat() {
               ></textarea>
             </div>
           ) : null}
-          {part2 ? (
+          {/* {part2 ? (
             <div className="px-10 text-black flex flex-col mt-5">
               <textarea
                 type="text"
@@ -618,7 +781,7 @@ export default function Chat() {
                 className="p-2 my-2  w-full h-[10rem] bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem]"
               ></textarea>
             </div>
-          ) : null}
+          ) : null} */}
           {part3 ? (
             <div className="px-10 text-black flex flex-col mt-5">
               <textarea
@@ -711,22 +874,22 @@ export default function Chat() {
               ref={hiddenFileInput}
             ></input>
           </div>{" "} */}
-          {part2 ? (
+          {/* {part2 ? (
             <div className="w-full flex justify-end px-10">
               <button
                 onClick={handleAdd}
-                className=" bg-[#737171] text-xs py-1 px-10 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
+                className=" bg-[#737171] text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
               >
                 Add
               </button>
             </div>
-          ) : null}
+          ) : null} */}
 
           {final ? null : (
             <div className="w-full">
               <button
                 onClick={handleNext}
-                className=" bg-[#474545] text-xs py-1 px-10 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
+                className=" bg-[#474545] text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
               >
                 Next
               </button>
@@ -745,7 +908,7 @@ export default function Chat() {
               <CircularProgress color="inherit" />
             </div>
           )} */}
-          {part2 && (
+          {/* {part2 && (
             <div className="w-full h-3/5 pb-10">
               {part1IWA.map((p1iwa) => (
                 <div className="flex flex-row items-center" key={p1iwa.id}>
@@ -763,14 +926,15 @@ export default function Chat() {
                 </div>
               )}
             </div>
-          )}
+          )} */}
         </div>
       </div>
       {final ? (
         <div className=" w-full h-fit text-black tracking-[0.1rem]">
           <div className="flex flex-row">
             <div className="flex flex-col w-1/3 pl-10">
-              <p className="font-semibold mb-5">Adjacent Job Titles</p>
+              <p className="font-semibold mb-5">Adjacent Job Titles</p>{" "}
+              {/* {dummy.map((j) => ( */}
               {adjacentJobs.map((j) => (
                 <div className="flex flex-row items-center" key={j.id}>
                   <p className=" pb-2 tracking-[0.10rem]">{j}</p>
@@ -779,6 +943,7 @@ export default function Chat() {
             </div>
             <div className="flex flex-col w-1/3 px-5">
               <p className="font-semibold mb-5">Emerging Job Titles</p>
+              {/* {dummy.map((j) => ( */}{" "}
               {emergingJobs.map((j) => (
                 <div className="flex flex-row items-center" key={j.id}>
                   <p className=" pb-2 tracking-[0.10rem]">{j}</p>
@@ -789,6 +954,7 @@ export default function Chat() {
               <p className="font-semibold mb-5">
                 Gigwork/Internship Job Titles
               </p>
+              {/* {dummy.map((j) => ( */}
               {gigJobs.map((j) => (
                 <div className="flex flex-row items-center" key={j.id}>
                   <p className=" pb-2 tracking-[0.10rem]">{j}</p>
@@ -800,18 +966,111 @@ export default function Chat() {
       ) : null}
 
       {final ? (
-        <div className="w-full flex flex-row justify-center">
-          <button
-            // onClick={generateAdjacentJobs}
-            className=" bg-[#474545] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
-          >
-            Save
-          </button>
-          <button className=" bg-[#737171] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10">
-            Restart
-          </button>
+        <div className="w-full flex flex-col items-center px-10">
+          <div className="w-full flex flex-row my-[2rem] justify-center">
+            <button
+              // onClick={generateAdjacentJobs}
+              className=" bg-[#474545] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
+            >
+              Save
+            </button>
+            <button
+              onClick={restartPage}
+              className=" bg-[#737171] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
+            >
+              Restart
+            </button>
+          </div>
+          <p className="text-[#555555] text-md mb-[2rem]  tracking-[0.10rem] ">
+            <u>Find out more</u> about your Generated Job Titles using the Task
+            Compare Tool below.
+          </p>
+          <div className="flex flex-row mt-[1rem] w-full  tracking-[0.10rem] ">
+            <div className="w-1/2 flex flex-col pr-5">
+              <p className="text-md text-[#555555] font-semibold">
+                Your Standardized Task Activites
+              </p>
+              <p className=" text-black mt-[1rem] mb-[5rem]">
+                List of Standardized Task Activites translated based on your
+                inputs.
+              </p>
+
+              <div className="mb-[3rem]">
+                {/* {dummy.map((j) => ( */}
+                {part3IWA.map((j) => (
+                  <div className="flex flex-row items-center " key={j.id}>
+                    <p className=" pb-2 tracking-[0.10rem] text-black">{j}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="w-1/2 flex flex-col pl-5">
+              <p className="text-md text-[#555555] font-semibold">Input Job</p>
+              <p className=" text-black mt-[1rem] mb-[3rem] ">
+                Please input a generated job title to compare the list of its
+                standardized task activities versus your set of standardized
+                task activities.
+              </p>
+              <input
+                type="text"
+                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
+                value={genjob}
+                onChange={handleGenJobChange}
+                placeholder="Job title here..."
+              ></input>
+              <div className="flex flex-row  my-[3rem]">
+                <button
+                  onClick={handleCompareGenJob}
+                  className=" bg-[#474545] text-xs py-1 px-10 text-white w-fit tracking-[0.10rem] rounded-md mr-10"
+                >
+                  Compare
+                </button>
+                <button
+                  onClick={restartCompare}
+                  className=" bg-[#737171] text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md mr-10"
+                >
+                  Restart
+                </button>
+                <button
+                  //   onClick={handleNext}
+                  className="bg-[#737171] text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md "
+                >
+                  Save
+                </button>
+              </div>
+              <div className="w-full flex font-semibold  text-black flex-row mt-[2rem] justify-between  mb-[1rem]">
+                <p className=" ">Similar Tasks: {same} %</p>
+                <div className="flex flex-row">
+                  <p className="">Importance</p>
+                  <KeyboardArrowDownIcon />
+                </div>
+              </div>
+              {same_list.map((j) => (
+                <div className="flex flex-row items-center " key={j.id}>
+                  <p className=" pb-2 tracking-[0.10rem] text-black">{j}</p>
+                </div>
+              ))}
+              <div className="w-full flex font-semibold  text-black flex-row mt-[2rem] justify-between  mb-[1rem]">
+                <p className=" ">Tasks to Train: {diff} %</p>
+                <div className="flex flex-row">
+                  <p className="">Importance</p>
+                  <KeyboardArrowDownIcon />
+                </div>
+              </div>
+              <div className="mb-[3rem]">
+                {diff_list.map((j) => (
+                  <div className="flex flex-row items-center " key={j.id}>
+                    <p className=" pb-2 tracking-[0.10rem] text-black bg-[#F5D3CC]">
+                      {j}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       ) : null}
+      {part1 ? <div></div> : null}
     </div>
   );
 }

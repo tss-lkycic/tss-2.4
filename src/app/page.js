@@ -60,7 +60,7 @@ export default function Page() {
           </p>
           {expand ? (
             <div className="flex flex-col mt-[2rem] track-[0.15rem] gap-[1rem] text-xs">
-              <p className="font-bold"> WHY TASKS?</p>
+              <p className="font-bold mt-[1rem]"> WHY TASKS?</p>
               <p>
                 Tasks are the specific activities and responsibilities that make
                 up a job, offering a clear picture of the day-to-day work. This
@@ -70,7 +70,9 @@ export default function Page() {
                 capabilities and the job's demands, leading to more effective
                 job matching, career development, and workforce planning.
               </p>
-              <p className="font-bold">WHERE DOES AI COMES INTO STAK</p>{" "}
+              <p className="font-bold mt-[1rem]">
+                WHERE DOES AI COMES INTO STAK
+              </p>{" "}
               <p>
                 STAK uses AI to improve the accuracy of its assessments. We use
                 it to study your portfolio and to build an accurate picture of
@@ -82,7 +84,7 @@ export default function Page() {
           {expand ? (
             <button
               onClick={handleMinimise}
-              className="self-start underline text-xs font-bold mt-5 tracking-[0.15rem]"
+              className="self-start underline text-xs font-bold mt-[3rem] tracking-[0.15rem]"
             >
               RETURN
             </button>
@@ -128,7 +130,7 @@ export default function Page() {
           <div className="flex justify-center items-center">
             <Image src={line} width={30} alt="Logo" className="m-2"></Image>
           </div>
-          <Link href="/compare">
+          <Link href="/transition">
             <div className=" flex flex-col justify-center items-center">
               <Image
                 src={transition}
@@ -183,7 +185,7 @@ export default function Page() {
                   insights into your career development and gain clarity on how
                   your experiences can align with various industry roles.
                 </p>
-                <Link href="/translate">
+                <Link href="/compare">
                   <button className="self-start text-xs underline font-bold ">
                     TRY NOW
                   </button>{" "}
@@ -218,7 +220,7 @@ export default function Page() {
             <Image src={temp} alt="gif" className="w-1/2"></Image>
           </div>
         </div>
-        <p className="mt-[5rem] mb-[2rem]">Copyright © 2024.</p>
+        <p className="mt-[12rem] mb-[6rem]">Copyright © 2024.</p>
       </div>
     </div>
   );

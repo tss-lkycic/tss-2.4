@@ -3,6 +3,7 @@
 import { useChat } from "ai/react";
 import logo from "/public/logo.svg";
 import OpenAI from "openai";
+import Link from "next/link";
 import new_logo from "/public/new_logo.svg";
 import transition from "/public/transition.svg";
 import Image from "next/image";
@@ -486,26 +487,6 @@ export default function Chat() {
               handleSavePart1IWAs();
             }, 3000);
           }
-          //   if (part2 === true) {
-          //     setTimeout(() => {
-          //       handleAddPart2IWAs();
-          //     }, 3000);
-          //   }
-          //   if (part3 === true) {
-          //     setTimeout(() => {
-          //       handleAddPart3IWAs();
-          //     }, 4000);
-          //   }
-          //   if (part4 === true) {
-          //     setTimeout(() => {
-          //       handleAddPart3IWAs();
-          //     }, 3000);
-          //   }
-          //   if (final === true) {
-          //     setTimeout(() => {
-          //       getSimilar();
-          //     }, 5000);
-          //   }
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
@@ -681,10 +662,14 @@ export default function Chat() {
       className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll"
       id="results"
     >
-      <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
-        <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-        <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
-      </div>
+      {" "}
+      <Link href="/">
+        <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
+          <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
+
+          <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
+        </div>
+      </Link>
       <div
         className={`flex flex-row w-full  ${
           final ? "h-2/5" : "h-full"
@@ -950,7 +935,6 @@ export default function Chat() {
           </div>
         </div>
       ) : null}
-
       {final ? (
         <div className="w-full flex flex-col items-center px-10">
           <div className="w-full flex flex-row my-[2rem] justify-center">
@@ -1019,7 +1003,7 @@ export default function Chat() {
                 </button>
                 <button
                   //   onClick={handleNext}
-                  className="bg-[#737171] text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md "
+                  className=" text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md "
                 >
                   Save
                 </button>

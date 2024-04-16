@@ -6,8 +6,11 @@ import new_logo from "/public/new_logo.svg";
 import translate from "/public/translate.svg";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import OpenAI from "openai";
+import Link from "next/link";
 import CircularProgress from "@mui/material/CircularProgress";
+import DownloadIcon from "@mui/icons-material/Download";
 import html2canvas from "html2canvas";
 
 export default function Chat() {
@@ -28,6 +31,7 @@ export default function Chat() {
   const [IWAs, setIWAs] = useState([]);
   const responseRef = useRef(null);
   const [user, setUser] = useState(generateID());
+  const [loading, setLoading] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [sentRequest, setSentRequest] = useState(false);
 
@@ -141,7 +145,8 @@ export default function Chat() {
   };
 
   function handleGenerate() {
-    setSentRequest(true);
+    // setSentRequest(true);
+    setLoading(true);
     if (inputtype === "Text") {
       getTasksFromText();
     } else if (inputtype === "URL") {
@@ -172,18 +177,18 @@ export default function Chat() {
     setURL(urlLink);
   }
 
-  function handleReset() {
+  function handleFileChange(e) {
+    console.log(e.target);
+  }
+
+  function restartPage() {
     setIWAs([]);
     setHobbies("");
     setText("");
     setURL("");
     setJob("");
     generateID();
-    setCompleted(false);
-    setSentRequest(false);
-  }
-  function handleFileChange(e) {
-    console.log(e.target);
+    location.reload();
   }
   function processIWA(array) {
     let iwa_list = [];
@@ -253,7 +258,8 @@ export default function Chat() {
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
           processIWA(iwa_arr);
-          setCompleted(true);
+          // setCompleted(true);
+          setLoading(false);
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
@@ -344,10 +350,12 @@ export default function Chat() {
       className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll"
       id="results"
     >
-      <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
-        <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-        <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
-      </div>
+      <Link href="/">
+        <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
+          <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
+          <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
+        </div>{" "}
+      </Link>
 
       <div className="flex flex-row w-full h-full  text-[#555555] ">
         <div className="flex flex-col w-1/2 h-full  tracking-[0.10rem]">
@@ -523,15 +531,17 @@ export default function Chat() {
               Generate
             </button>
             <button
-              onClick={handleReset}
-              className=" bg-[#474545] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
+              onClick={restartPage}
+              className=" bg-[#737171] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
             >
+              <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
               Reset
             </button>
             <button
               onClick={downloadImage}
-              className=" bg-[#474545] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5"
+              className=" bg-[#737171] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5"
             >
+              <DownloadIcon className="mr-3 text-[1.5rem]" />
               Save
             </button>
           </div>
@@ -539,12 +549,13 @@ export default function Chat() {
 
         <div className="flex flex-col w-1/2 h-full p-5">
           <div className="w-full h-2/5 "></div>
-          {!completed && sentRequest && (
+          {loading ? (
             <div className="w-full  flex">
               <CircularProgress color="inherit" />
             </div>
-          )}
-          <div className="w-full h-3/5 pb-10">
+          ) : null}
+
+          <div className="w-full h-3/5 pb-10 " id="results">
             {IWAs.map((iwa) => (
               <div className="flex flex-row items-center" key={iwa.id}>
                 <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>

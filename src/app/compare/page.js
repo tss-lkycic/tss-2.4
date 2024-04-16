@@ -4,8 +4,10 @@ import { useChat } from "ai/react";
 import new_logo from "/public/new_logo.svg";
 import compare_logo from "/public/compare.svg";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import Link from "next/link";
 import Image from "next/image";
+import DownloadIcon from "@mui/icons-material/Download";
+import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useEffect, useState, useRef } from "react";
 import OpenAI from "openai";
 
@@ -51,6 +53,7 @@ export default function Chat() {
   const [sentRequest, setSentRequest] = useState(false);
   const [iwa1ID, setiwa1ID] = useState("");
   const [iwa2ID, setiwa2ID] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
@@ -106,9 +109,9 @@ export default function Chat() {
         invokeTask(response);
         setTimeout(() => {
           getIWAs(response);
-        }, 4000);
+        }, 3000);
       }
-    }, 1000); // Adjust the delay time as needed
+    }, 1500); // Adjust the delay time as needed
 
     // Cleanup the timeout if response changes before the delay ends
     return () => clearTimeout(timeout);
@@ -196,6 +199,7 @@ export default function Chat() {
     setDifferentTasks2([]);
     setCompleted1(false);
     setCompleted2(false);
+    location.reload();
   }
   function handleSave() {}
   function handleSelectInput1(value) {
@@ -317,6 +321,7 @@ export default function Chat() {
   }
 
   function compareInputs() {
+    setLoading(true);
     console.log("querying first input");
     setInput1IWA(true);
     setiwa1ID(user);
@@ -422,23 +427,29 @@ export default function Chat() {
           const iwa_arr = JSON.parse(iwas);
           processIWA(iwa_arr);
         } else if (iwa1ID === user) {
+          console.log("No tasks in queue. Exiting loop.");
+          console.log("process remainder");
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
           processIWA(iwa_arr);
-
-          setCompleted1(true);
-          console.log("no more tasks for input 1");
+          setTimeout(() => {
+            setCompleted1(true);
+          }, 3000);
         } else if (iwa2ID === user) {
+          console.log("No tasks in queue. Exiting loop.");
+          console.log("process remainder");
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
           processIWA(iwa_arr);
 
-          setCompleted2(true);
-          console.log("no more tasks for input 2");
+          setTimeout(() => {
+            setCompleted2(true);
+            setLoading(false);
+          }, 3000);
         }
 
         // Optional: Add a delay between API calls to avoid flooding the server
-        await new Promise((resolve) => setTimeout(resolve, 4000)); // 1 second delay
+        await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
       }
     } catch (error) {
       console.error("Error:", error);
@@ -455,7 +466,7 @@ export default function Chat() {
         "Create a list of tasks for the job," +
         userJob +
         "," +
-        "  even if the job does not exist yet, into a set of 3 short sentences and return them such that each task is numbered. ",
+        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
     });
   }
 
@@ -467,7 +478,7 @@ export default function Chat() {
         "Create a list of tasks for the job," +
         userJob +
         "," +
-        "  even if the job does not exist yet, into a set of 3 short sentences and return them such that each task is numbered. ",
+        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
     });
   }
   function getTasksFromHobbies1() {
@@ -475,8 +486,9 @@ export default function Chat() {
     append({
       role: "user",
       content:
+        "For each hobby or daily activity in this list:" +
         userHobbies +
-        "Based on this list of activities, create some possible tasks for each activity in sentences and return them such that each task is numbered. ",
+        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
     });
   }
   function getTasksFromHobbies2() {
@@ -484,8 +496,9 @@ export default function Chat() {
     append({
       role: "user",
       content:
+        "For each hobby or daily activity in this list:" +
         userHobbies +
-        "Based on this list of activities, create some possible tasks for each activity in sentences and return them such that each task is numbered. ",
+        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
     });
   }
 
@@ -495,14 +508,17 @@ export default function Chat() {
       id="results"
     >
       <div className="bg-[#F6F6F6] w-screen h-[80vh]  flex flex-col ">
-        <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
-          <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-          <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
-        </div>
+        <Link href="/">
+          {" "}
+          <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
+            <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
+            <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
+          </div>
+        </Link>
         <div className="flex flex-row w-full h-full text-[#555555]">
           <div className="flex flex-col w-1/2  h-full tracking-[0.10rem]">
             <div className="w-full h-1/2">
-              <div className="px-10 pt-5 w-2/3">
+              <div className="px-10 pt-5 w-5/6">
                 <div className="flex flex-row items-center py-2 font-medium">
                   <Image
                     src={compare_logo}
@@ -515,9 +531,10 @@ export default function Chat() {
                   </h3>
                 </div>{" "}
                 <p className="text-xs tracking-[0.10rem]">
-                  Compare Stack explanation. Lorem ipsum dolor sit amet,
-                  consectetur adipiscing elit, sed do eiusmod tempor incididunt
-                  ut labore et dolore magna aliqua.
+                  Compare and evaluate your career activities against other task
+                  portfolios, identifying overlaps and gaps. Infer strategic
+                  insights into your career development and gain clarity on how
+                  your experiences can align with various industry roles.
                 </p>
               </div>
               <div className="px-10 pt-5 pb-5  justify-between ">
@@ -853,26 +870,32 @@ export default function Chat() {
       <div className="w-full text-[#555555] flex my-2 justify-center ">
         <button
           onClick={handleReset}
-          className="tracking-[0.10rem] bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
+          className="tracking-[0.10rem] bg-[#737171] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
+          {" "}
+          <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
           Reset
         </button>
         <button
           onClick={compareInputs}
           className="tracking-[0.10rem]  bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
+          {" "}
+          <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
           Compare
         </button>
         <button
           onClick={handleSave}
-          className="tracking-[0.10rem] bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
+          className="tracking-[0.10rem] bg-[#737171] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
+          {" "}
+          <DownloadIcon className="mr-3 text-[1.5rem]" />
           Save
         </button>
       </div>{" "}
       {completed1 && completed2 && sentRequest ? (
         <div className="w-full  flex flex-row pb-10 text-[#555555]">
-          <div className="w-1/2 flex flex-col pl-10 pr-5">
+          <div className="w-1/2 flex flex-col pl-10 pr-5 pb-10">
             <p className="py-2 font-semibold">Similar Tasks: </p>
             {similarTasks.map((iwa) => (
               <div key={iwa.id}>
@@ -886,8 +909,8 @@ export default function Chat() {
               </div>
             ))}
           </div>
-          <div className="w-1/2 flex flex-col pl-5 pr-10">
-            <p className="py-2 font-semibold">Similar Tasks: </p>
+          <div className="w-1/2 flex flex-col pl-5 pr-10 pb-10">
+            <p className="py-2 font-semibold">Similar Tasks:</p>
 
             {similarTasks.map((iwa) => (
               <div key={iwa.id}>
@@ -895,7 +918,7 @@ export default function Chat() {
               </div>
             ))}
 
-            <p className="py-2 font-semibold">Other Tasks from Input 2: </p>
+            <p className="py-2 font-semibold ">Other Tasks from Input 2: </p>
 
             {differentTasks2.map((iwa) => (
               <div key={iwa.id}>
@@ -905,9 +928,9 @@ export default function Chat() {
           </div>
         </div>
       ) : (
-        sentRequest && (
-          <div className="w-full flex justify-center pb-10">
-            <CircularProgress />
+        loading && (
+          <div className="w-full text-gray-400 flex justify-center pb-10">
+            <CircularProgress color="inherit" />
           </div>
         )
       )}

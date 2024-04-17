@@ -220,7 +220,7 @@ export default function Page() {
             <Image src={temp} alt="gif" className="w-1/2"></Image>
           </div>
         </div>
-        <p className="mt-[12rem] mb-[6rem]">Copyright © 2024.</p>
+        <p className="mt-[12rem] text-xs mb-[6rem]">Copyright © 2024.</p>
       </div>
     </div>
   );

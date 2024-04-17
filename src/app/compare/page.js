@@ -512,7 +512,9 @@ export default function Chat() {
           {" "}
           <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
             <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-            <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
+            <p className="ml-5 text-xl tracking-[0.5rem]  text-white">
+              S T A K
+            </p>
           </div>
         </Link>
         <div className="flex flex-row w-full h-full text-[#555555]">

@@ -667,7 +667,7 @@ export default function Chat() {
         <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
           <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
 
-          <p className="ml-5 text-xl tracking-[0.5rem]">S T A K</p>
+          <p className="ml-5 text-xl text-white tracking-[0.5rem]">S T A K</p>
         </div>
       </Link>
       <div
@@ -951,9 +951,9 @@ export default function Chat() {
               Restart
             </button>
           </div>
-          <p className="text-[#555555] text-md mb-[2rem]  tracking-[0.10rem] ">
-            <u>Find out more</u> about your Generated Job Titles using the Task
-            Compare Tool below.
+          <p className="text-[#555555] text-md mb-[2rem]  text-xl font-medium tracking-[0.10rem] ">
+            Find out more about your Generated Job Titles using the Task Compare
+            Tool <u>below</u>
           </p>
           <div className="flex flex-row mt-[1rem] w-full  tracking-[0.10rem] ">
             <div className="w-1/2 flex flex-col pr-5">

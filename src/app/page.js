@@ -13,6 +13,9 @@ import { useEffect, useState, useRef } from "react";
 import OpenAI from "openai";
 import html2canvas from "html2canvas";
 import Link from "next/link";
+import translate_gif from "/public/translate2.gif";
+import compare_gif from "/public/compare2.gif";
+import transition_gif from "/public/transition2.gif";
 
 export default function Page() {
   const [expand, setExpand] = useState(false);
@@ -167,10 +170,10 @@ export default function Page() {
               </div>
             </div>
 
-            <Image src={temp} alt="gif" className="w-1/2"></Image>
+            <Image src={translate_gif} alt="gif" className="w-1/2"></Image>
           </div>
           <div className="flex flex-row w-full ">
-            <Image src={temp} alt="gif" className="w-1/2"></Image>
+            <Image src={compare_gif} alt="gif" className="w-1/2"></Image>
             <div className="w-1/2 flex flex-row p-10 justify-center items-center">
               <Image
                 src={compare_logo}
@@ -217,7 +220,7 @@ export default function Page() {
               </div>
             </div>
 
-            <Image src={temp} alt="gif" className="w-1/2"></Image>
+            <Image src={transition_gif} alt="gif" className="w-1/2"></Image>
           </div>
         </div>
         <p className="mt-[12rem] text-xs mb-[6rem]">Copyright © 2024.</p>

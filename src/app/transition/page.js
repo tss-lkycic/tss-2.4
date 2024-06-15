@@ -79,13 +79,6 @@ export default function Chat() {
         console.log(part1IWA, "hello iwas from part 1");
       }, 200);
     }
-    //  else if (part2 === true && IWAs.length > 0) {
-    //   //   setNewIWAs([...newIWAs, ...IWAs]);
-    //   setTimeout(() => {
-    //     setNewIWAs(IWAs);
-    //     console.log(newIWAs, "hello new iwas");
-    //   }, 200);
-    // }
     if (part3 === true) {
       setTimeout(() => {
         const newiwa = IWAs;
@@ -96,18 +89,11 @@ export default function Chat() {
     if (final === true && IWAs.length > 0) {
       setTimeout(() => {
         console.log("genjobiwa", IWAs);
-        // const newiwa = IWAs;
-        // setGenJobIWA(newiwa);
         getSimilar();
       }, 200);
     }
   }, [IWAs]);
 
-  //   useEffect(() => {
-  //     if (genjobIWA.length > 0) {
-  //     // ("heloooooooo");
-  //     }
-  //   }, [genjobIWA]);
   useEffect(() => {
     if (newIWAs.length > 0) {
       const combinedIWAs = new Set([...part1IWA, ...newIWAs]);
@@ -236,15 +222,6 @@ export default function Chat() {
     setDiffList([]);
   }
 
-  //   function handleNext2() {
-  //     const combinedIWAs = new Set([...newIWAs, ...part1IWA]);
-  //     const uniqueIWAs = Array.from(combinedIWAs);
-  //     setPart2IWA(uniqueIWAs);
-  //     setPart2(false);
-  //     setPart3(true);
-  //     console.log(part1IWA.length, "p1 length");
-  //     console.log(part2IWA.length, "p2 length");
-  //   }
   function handleNext3() {
     setLoading(true);
     const userHobby = hobbies;
@@ -330,37 +307,6 @@ export default function Chat() {
 
     console.log(reader, "hello");
   }
-
-  async function handleTest() {
-    // const formData = new FormData();
-    // console.log(fileContents, "helloooo");
-    // formData.append("file", fileContents, fileContents.name);
-    // console.log(formData, "this is formdata");
-    // const response = await fetch("/api/uploadFile", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "multipart/form-data",
-    //   },
-    //   body: formData,
-    // });
-    // if (!response.ok) {
-    //   console.error("Error uploading file:", response.statusText);
-    //   return;
-    // }
-    // // Check content type for JSON or handle other formats as needed
-    // const contentType = response.headers.get("Content-Type");
-    // if (contentType && contentType.includes("application/json")) {
-    //   const data = await response.json(); // Parse as JSON
-    //   console.log("Response from API:", data);
-    // } else {
-    //   // Handle non-JSON response (e.g., display error message or parse differently)
-    //   console.error("Unexpected response format:", contentType);
-    // }
-  }
-
-  //   function createAssistant() {
-
-  //   }
 
   function handleJobChange(e) {
     const jobName = e.target.value;
@@ -473,13 +419,15 @@ export default function Chat() {
         if (noOfTasksInQueue > 0) {
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
-          processIWA(iwa_arr);
+          // processIWA(iwa_arr);
+          setIWAs(iwa_arr);
         } else {
           console.log("process remainder");
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
-          processIWA(iwa_arr);
-          //   setCompleted(true);
+          // processIWA(iwa_arr);
+          setIWAs(iwa_arr);
+
           console.log("No tasks in queue. Exiting loop.");
           if (part1 === true) {
             // const tasks = IWAs;
@@ -692,7 +640,7 @@ export default function Chat() {
                 <h3 className="ml-5 text-xl tracking-[0.10rem]">
                   Transition Generator
                 </h3>
-              </div>{" "}
+              </div>
               <p className="text-xs tracking-[0.10rem]">
                 Utilize our transition generation capability to explore new
                 career opportunities that match your unique task profile. By
@@ -851,33 +799,6 @@ export default function Chat() {
             </div>
           ) : null}
 
-          {/* <div className="px-10 py-10 text-black  flex flex-col">
-            <button
-              onClick={handleUpload}
-              className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[10rem] p-2 flex flex-col justify-center items-center"
-            >
-              Select File Here
-            </button>
-            <input
-              type="file"
-              id="file"
-              className="hidden"
-              onChange={handleChange}
-              // onChange={handleFileChange}
-              ref={hiddenFileInput}
-            ></input>
-          </div>{" "} */}
-          {/* {part2 ? (
-            <div className="w-full flex justify-end px-10">
-              <button
-                onClick={handleAdd}
-                className=" bg-[#737171] text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
-              >
-                Add
-              </button>
-            </div>
-          ) : null} */}
-
           {final ? null : (
             <div className="w-full">
               <button
@@ -891,9 +812,6 @@ export default function Chat() {
         </div>
 
         <div
-          //   className={`flex flex-col w-1/2 bg-black ${
-          //     final ? "h-full" : "h-2/5"
-          //   } tracking-[0.10rem] `}
           className="flex flex-col w-1/2 justify-center items-center
            tracking-[0.10rem] h-full"
         >
@@ -905,7 +823,6 @@ export default function Chat() {
           <div className="flex flex-row">
             <div className="flex flex-col w-1/3 pl-10">
               <p className="font-semibold mb-5">Adjacent Job Titles</p>{" "}
-              {/* {dummy.map((j) => ( */}
               {adjacentJobs.map((j) => (
                 <div className="flex flex-row items-center" key={j.id}>
                   <p className=" pb-2 tracking-[0.10rem]">{j}</p>
@@ -914,7 +831,6 @@ export default function Chat() {
             </div>
             <div className="flex flex-col w-1/3 px-5">
               <p className="font-semibold mb-5">Emerging Job Titles</p>
-              {/* {dummy.map((j) => ( */}{" "}
               {emergingJobs.map((j) => (
                 <div className="flex flex-row items-center" key={j.id}>
                   <p className=" pb-2 tracking-[0.10rem]">{j}</p>
@@ -925,7 +841,6 @@ export default function Chat() {
               <p className="font-semibold mb-5">
                 Gigwork/Internship Job Titles
               </p>
-              {/* {dummy.map((j) => ( */}
               {gigJobs.map((j) => (
                 <div className="flex flex-row items-center" key={j.id}>
                   <p className=" pb-2 tracking-[0.10rem]">{j}</p>
@@ -938,10 +853,7 @@ export default function Chat() {
       {final ? (
         <div className="w-full flex flex-col items-center px-10">
           <div className="w-full flex flex-row my-[2rem] justify-center">
-            <button
-              // onClick={generateAdjacentJobs}
-              className=" bg-[#474545] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
-            >
+            <button className=" bg-[#474545] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10">
               Save
             </button>
             <button
@@ -966,7 +878,6 @@ export default function Chat() {
               </p>
 
               <div className="mb-[3rem]">
-                {/* {dummy.map((j) => ( */}
                 {part3IWA.map((j) => (
                   <div className="flex flex-row items-center " key={j.id}>
                     <p className=" pb-2 tracking-[0.10rem] text-black">{j}</p>

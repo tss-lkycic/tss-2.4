@@ -32,8 +32,6 @@ export default function Chat() {
   const responseRef = useRef(null);
   const [user, setUser] = useState(generateID());
   const [loading, setLoading] = useState(false);
-  const [completed, setCompleted] = useState(false);
-  const [sentRequest, setSentRequest] = useState(false);
 
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
@@ -55,7 +53,7 @@ export default function Chat() {
   }, [messages]);
 
   useEffect(() => {
-    console.log(IWAs);
+    console.log("useeffect log of IWA", IWAs);
   }, [IWAs]);
 
   useEffect(() => {
@@ -145,7 +143,6 @@ export default function Chat() {
   };
 
   function handleGenerate() {
-    // setSentRequest(true);
     setLoading(true);
     if (inputtype === "Text") {
       getTasksFromText();
@@ -189,16 +186,6 @@ export default function Chat() {
     setJob("");
     generateID();
     location.reload();
-  }
-  function processIWA(array) {
-    let iwa_list = [];
-    for (let i = 0; i < array.length; i++) {
-      const iwa_pair = array[i];
-      const result_iwa = iwa_pair[1];
-      iwa_list.push(result_iwa);
-    }
-    iwa_list = Array.from(new Set(iwa_list));
-    setIWAs(iwa_list);
   }
 
   async function invokeTask(tasklist) {
@@ -251,14 +238,13 @@ export default function Chat() {
         if (noOfTasksInQueue > 0) {
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
-          processIWA(iwa_arr);
+          setIWAs(iwa_arr);
         } else {
           console.log("No tasks in queue. Exiting loop.");
           console.log("process remainder");
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
-          processIWA(iwa_arr);
-          // setCompleted(true);
+          setIWAs(iwa_arr);
           setLoading(false);
         }
 
@@ -295,18 +281,6 @@ export default function Chat() {
       console.error("Error capturing image:", error);
     }
   };
-
-  // const downloadImage = () => {
-  //   // Capture the entire document
-  //   html2canvas(document.body, { scrollY: -window.scrollY }).then(function (
-  //     canvas
-  //   ) {
-  //     const link = document.createElement("a");
-  //     link.download = "entire_page.png";
-  //     link.href = canvas.toDataURL("image/png");
-  //     link.click();
-  //   });
-  // };
 
   function getTasksFromFile() {}
   function getTasksFromURL() {}
@@ -354,7 +328,7 @@ export default function Chat() {
         <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
           <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
           <p className="ml-5 text-xl  text-white tracking-[0.5rem]">S T A K</p>
-        </div>{" "}
+        </div>
       </Link>
 
       <div className="flex flex-row w-full h-full  text-[#555555] ">
@@ -371,14 +345,14 @@ export default function Chat() {
                 <h3 className="ml-5 text-xl tracking-[0.10rem]">
                   Task Translator
                 </h3>
-              </div>{" "}
+              </div>
               <p className="text-xs tracking-[0.10rem]">
                 Translate your daily tasks into industry-recognized activities
                 to provide a clear, standardized representation of your
                 professional contributions.
               </p>
             </div>
-            <div className="px-10 pt-5 pb-5  justify-between ">
+            <div className="px-10 pt-5 pb-5 justify-between">
               <button
                 className={` pr-2 tracking-[0.10rem] ${
                   queryText ? "text-md text-[#555555]" : "text-sm text-gray-400"
@@ -556,8 +530,8 @@ export default function Chat() {
           ) : null}
 
           <div className="w-full h-3/5 pb-10 " id="results">
-            {IWAs.map((iwa) => (
-              <div className="flex flex-row items-center" key={iwa.id}>
+            {IWAs.map((iwa, index) => (
+              <div className="flex flex-row items-center" key={index}>
                 <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>
               </div>
             ))}

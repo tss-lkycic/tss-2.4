@@ -465,7 +465,7 @@ export default function Chat() {
         "Create a list of tasks for the job," +
         userJob +
         "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
+        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
     });
   }
 
@@ -477,7 +477,7 @@ export default function Chat() {
         "Create a list of tasks for the job," +
         userJob +
         "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
+        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
     });
   }
   function getTasksFromHobbies1() {
@@ -487,7 +487,7 @@ export default function Chat() {
       content:
         "For each hobby or daily activity in this list:" +
         userHobbies +
-        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
+        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events. Keep each sentence shorter than 10 words.",
     });
   }
   function getTasksFromHobbies2() {
@@ -497,7 +497,7 @@ export default function Chat() {
       content:
         "For each hobby or daily activity in this list:" +
         userHobbies +
-        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
+        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events. Keep each sentence shorter than 10 words.",
     });
   }
 

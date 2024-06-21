@@ -292,7 +292,7 @@ export default function Chat() {
       content:
         userText +
         // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. ",
+        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words. ",
     });
   }
   function getTasksFromHobbies() {
@@ -303,7 +303,7 @@ export default function Chat() {
         // userHobbies +
         "For each hobby or daily activity in this list:" +
         userHobbies +
-        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
+        ",convert them into tasks sentence, each shorter than 10 words and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
     });
   }
 
@@ -315,7 +315,7 @@ export default function Chat() {
         "Create a list of tasks for the job," +
         userJob +
         "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
+        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
     });
   }
 

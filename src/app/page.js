@@ -30,11 +30,8 @@ export default function Page() {
   }
 
   return (
-    <div className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll">
-      {" "}
-      <div className=" bg-[#474545] h-[3.5rem] w-full flex justify-center items-center"></div>
-      <div className="max-w-screen max-h-screen w-screen h-screen flex flex-col items-center text-[#555555] overflow-scroll">
-        {" "}
+    <div className="flex flex-col">
+      <div className="max-w-screen max-h-screen w-screen h-screen flex flex-col items-center overflow-scroll">
         <div className="w-full flex flex-col mt-[2rem] items-center ">
           <Image src={new_logo} width={100} alt="Logo" className="m-2"></Image>
           <h1 className="text-xl tracking-[1rem] mt-2 text-center font-medium">
@@ -75,7 +72,7 @@ export default function Page() {
               </p>
               <p className="font-bold mt-[1rem]">
                 WHERE DOES AI COMES INTO STAK
-              </p>{" "}
+              </p>
               <p>
                 STAK uses AI to improve the accuracy of its assessments. We use
                 it to study your portfolio and to build an accurate picture of

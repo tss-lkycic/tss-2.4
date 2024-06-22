@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
+import TopBar from "./components/TopBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -10,7 +11,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <TopBar />
+        <div className="bg-[#F6F6F6] text-[#555555] w-screen h-screen overflow-scroll md:px-6 px-3">
+          {children}
+        </div>
+      </body>
     </html>
   );
 }

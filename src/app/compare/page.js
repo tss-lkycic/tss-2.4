@@ -507,15 +507,6 @@ export default function Chat() {
       id="results"
     >
       <div className="bg-[#F6F6F6] w-screen h-[80vh]  flex flex-col ">
-        <Link href="/">
-          {" "}
-          <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
-            <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-            <p className="ml-5 text-xl tracking-[0.5rem]  text-white">
-              S T A K
-            </p>
-          </div>
-        </Link>
         <div className="flex flex-row w-full h-full text-[#555555]">
           <div className="flex flex-col w-1/2  h-full tracking-[0.10rem]">
             <div className="w-full h-1/2">

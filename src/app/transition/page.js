@@ -607,17 +607,9 @@ export default function Chat() {
 
   return (
     <div
-      className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll"
+      className="w-screen h-screen flex flex-col overflow-scroll"
       id="results"
     >
-      {" "}
-      <Link href="/">
-        <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
-          <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-
-          <p className="ml-5 text-xl text-white tracking-[0.5rem]">S T A K</p>
-        </div>
-      </Link>
       <div
         className={`flex flex-row w-full  ${
           final ? "h-2/5" : "h-full"

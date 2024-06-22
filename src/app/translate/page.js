@@ -320,222 +320,210 @@ export default function Chat() {
   }
 
   return (
-    <div
-      className="bg-[#F6F6F6] w-screen h-screen flex flex-col overflow-scroll"
-      id="results"
-    >
-      <Link href="/">
-        <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
-          <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-          <p className="ml-5 text-xl  text-white tracking-[0.5rem]">S T A K</p>
-        </div>
-      </Link>
-
-      <div className="flex flex-row w-full h-full  text-[#555555] ">
-        <div className="flex flex-col w-1/2 h-full  tracking-[0.10rem]">
-          <div className="w-full h-2/5">
-            <div className="px-10 pt-5 w-2/3">
-              <div className="flex flex-row items-center py-2 font-medium">
-                <Image
-                  src={translate}
-                  width={40}
-                  alt="Logo"
-                  className="text-lg"
-                ></Image>
-                <h3 className="ml-5 text-xl tracking-[0.10rem]">
-                  Task Translator
-                </h3>
-              </div>
-              <p className="text-xs tracking-[0.10rem]">
-                Translate your daily tasks into industry-recognized activities
-                to provide a clear, standardized representation of your
-                professional contributions.
-              </p>
+    <div className="flex flex-row w-full h-full ">
+      <div className="flex flex-col w-1/2 h-full  tracking-[0.10rem]">
+        <div className="w-full h-2/5">
+          <div className="px-10 pt-5 w-2/3">
+            <div className="flex flex-row items-center py-2 font-medium">
+              <Image
+                src={translate}
+                width={40}
+                alt="Logo"
+                className="text-lg"
+              ></Image>
+              <h3 className="ml-5 text-xl tracking-[0.10rem]">
+                Task Translator
+              </h3>
             </div>
-            <div className="px-10 pt-5 pb-5 justify-between">
-              <button
-                className={` pr-2 tracking-[0.10rem] ${
-                  queryText ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectItem("Text")}
-              >
-                Paste Text
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryURL ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectItem("URL")}
-              >
-                Link URL
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryPDF ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectItem("PDF")}
-              >
-                Upload CV
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryJob ? "text-md text-[#555555]" : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectItem("Job")}
-              >
-                Input Job
-              </button>
-              |
-              <button
-                className={` px-2 tracking-[0.10rem] ${
-                  queryHobbies
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                }`}
-                onClick={() => handleSelectItem("Hobbies")}
-              >
-                Input Hobbies
-              </button>
-            </div>
-            {queryText ? (
-              <p className="px-10 text-xs pb-5">
-                Please submit the text you wish to convert into standardized
-                task activities. This can be a job description, course
-                description, or your resume content.
-              </p>
-            ) : null}
-            {queryURL ? (
-              <p className="px-10 text-xs pb-5">
-                Please submit the URL with content that can be translated into
-                standardized task activities. This can be a link to a job
-                description, course description, or your resume.
-              </p>
-            ) : null}
-            {queryPDF ? (
-              <p className="px-10 text-xs pb-5">
-                Please upload the file that has content that can be translated
-                into standardized task activities. This can be a job
-                description, course description, or your resume.
-              </p>
-            ) : null}
-            {queryJob ? (
-              <p className="px-10 text-xs pb-5">
-                Please input a job title to generate a list of its standardized
-                task activities.
-              </p>
-            ) : null}
-            {queryHobbies ? (
-              <p className="px-10 text-xs pb-5">
-                Please input a list of hobbies and/or daily activities to
-                generate a list of its standardized task activities.
-              </p>
-            ) : null}
+            <p className="text-xs tracking-[0.10rem]">
+              Translate your daily tasks into industry-recognized activities to
+              provide a clear, standardized representation of your professional
+              contributions.
+            </p>
           </div>
-
+          <div className="px-10 pt-5 pb-5 justify-between">
+            <button
+              className={` pr-2 tracking-[0.10rem] ${
+                queryText ? "text-md text-[#555555]" : "text-sm text-gray-400"
+              }`}
+              onClick={() => handleSelectItem("Text")}
+            >
+              Paste Text
+            </button>
+            |
+            <button
+              className={` px-2 tracking-[0.10rem] ${
+                queryURL ? "text-md text-[#555555]" : "text-sm text-gray-400"
+              }`}
+              onClick={() => handleSelectItem("URL")}
+            >
+              Link URL
+            </button>
+            |
+            <button
+              className={` px-2 tracking-[0.10rem] ${
+                queryPDF ? "text-md text-[#555555]" : "text-sm text-gray-400"
+              }`}
+              onClick={() => handleSelectItem("PDF")}
+            >
+              Upload CV
+            </button>
+            |
+            <button
+              className={` px-2 tracking-[0.10rem] ${
+                queryJob ? "text-md text-[#555555]" : "text-sm text-gray-400"
+              }`}
+              onClick={() => handleSelectItem("Job")}
+            >
+              Input Job
+            </button>
+            |
+            <button
+              className={` px-2 tracking-[0.10rem] ${
+                queryHobbies
+                  ? "text-md text-[#555555]"
+                  : "text-sm text-gray-400"
+              }`}
+              onClick={() => handleSelectItem("Hobbies")}
+            >
+              Input Hobbies
+            </button>
+          </div>
           {queryText ? (
-            <div className="px-10 text-black w-full flex flex-col">
-              <textarea
-                type="text"
-                value={text}
-                className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
-                placeholder="Type or paste your text here..."
-                onChange={handleTextChange}
-              ></textarea>
-            </div>
+            <p className="px-10 text-xs pb-5">
+              Please submit the text you wish to convert into standardized task
+              activities. This can be a job description, course description, or
+              your resume content.
+            </p>
           ) : null}
           {queryURL ? (
-            <div className="px-10 text-black flex flex-col">
-              <input
-                value={url}
-                type="text"
-                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
-                placeholder="Enter a URL here..."
-                onChange={handleURLChange}
-              ></input>
-            </div>
+            <p className="px-10 text-xs pb-5">
+              Please submit the URL with content that can be translated into
+              standardized task activities. This can be a link to a job
+              description, course description, or your resume.
+            </p>
           ) : null}
           {queryPDF ? (
-            <div className="px-10 text-black  flex flex-col">
-              <button
-                onClick={handleUpload}
-                className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
-              >
-                Select File Here
-              </button>
-              <input
-                type="file"
-                id="file"
-                className="hidden"
-                onChange={handleChange}
-                // onChange={handleFileChange}
-                ref={hiddenFileInput}
-              ></input>
-            </div>
+            <p className="px-10 text-xs pb-5">
+              Please upload the file that has content that can be translated
+              into standardized task activities. This can be a job description,
+              course description, or your resume.
+            </p>
           ) : null}
           {queryJob ? (
-            <div className="px-10 text-black flex flex-col">
-              <input
-                type="text"
-                className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
-                value={job}
-                onChange={handleJobChange}
-                placeholder="Enter a job title here..."
-              ></input>
-            </div>
+            <p className="px-10 text-xs pb-5">
+              Please input a job title to generate a list of its standardized
+              task activities.
+            </p>
           ) : null}
           {queryHobbies ? (
-            <div className="px-10 text-black flex flex-col">
-              <textarea
-                type="text"
-                className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
-                placeholder="List down your hobbies and/or daily activities"
-                value={hobbies}
-                onChange={handleHobbiesChange}
-              ></textarea>
-            </div>
+            <p className="px-10 text-xs pb-5">
+              Please input a list of hobbies and/or daily activities to generate
+              a list of its standardized task activities.
+            </p>
           ) : null}
-          <div className="px-10 flex gap-5">
-            <button
-              onClick={handleGenerate}
-              className=" bg-[#474545] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
-            >
-              Generate
-            </button>
-            <button
-              onClick={restartPage}
-              className=" bg-[#737171] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
-            >
-              <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
-              Reset
-            </button>
-            <button
-              onClick={downloadImage}
-              className=" bg-[#737171] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5"
-            >
-              <DownloadIcon className="mr-3 text-[1.5rem]" />
-              Save
-            </button>
-          </div>
         </div>
 
-        <div className="flex flex-col w-1/2 h-full p-5">
-          <div className="w-full h-2/5 "></div>
-          {loading ? (
-            <div className="w-full  flex">
-              <CircularProgress color="inherit" />
-            </div>
-          ) : null}
-
-          <div className="w-full h-3/5 pb-10 " id="results">
-            {IWAs.map((iwa, index) => (
-              <div className="flex flex-row items-center" key={index}>
-                <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>
-              </div>
-            ))}
+        {queryText ? (
+          <div className="px-10 text-black w-full flex flex-col">
+            <textarea
+              type="text"
+              value={text}
+              className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
+              placeholder="Type or paste your text here..."
+              onChange={handleTextChange}
+            ></textarea>
           </div>
+        ) : null}
+        {queryURL ? (
+          <div className="px-10 text-black flex flex-col">
+            <input
+              value={url}
+              type="text"
+              className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
+              placeholder="Enter a URL here..."
+              onChange={handleURLChange}
+            ></input>
+          </div>
+        ) : null}
+        {queryPDF ? (
+          <div className="px-10 text-black  flex flex-col">
+            <button
+              onClick={handleUpload}
+              className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
+            >
+              Select File Here
+            </button>
+            <input
+              type="file"
+              id="file"
+              className="hidden"
+              onChange={handleChange}
+              // onChange={handleFileChange}
+              ref={hiddenFileInput}
+            ></input>
+          </div>
+        ) : null}
+        {queryJob ? (
+          <div className="px-10 text-black flex flex-col">
+            <input
+              type="text"
+              className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
+              value={job}
+              onChange={handleJobChange}
+              placeholder="Enter a job title here..."
+            ></input>
+          </div>
+        ) : null}
+        {queryHobbies ? (
+          <div className="px-10 text-black flex flex-col">
+            <textarea
+              type="text"
+              className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
+              placeholder="List down your hobbies and/or daily activities"
+              value={hobbies}
+              onChange={handleHobbiesChange}
+            ></textarea>
+          </div>
+        ) : null}
+        <div className="px-10 flex gap-5">
+          <button
+            onClick={handleGenerate}
+            className=" bg-[#474545] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
+          >
+            Generate
+          </button>
+          <button
+            onClick={restartPage}
+            className=" bg-[#737171] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
+          >
+            <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
+            Reset
+          </button>
+          <button
+            onClick={downloadImage}
+            className=" bg-[#737171] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5"
+          >
+            <DownloadIcon className="mr-3 text-[1.5rem]" />
+            Save
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col w-1/2 h-full p-5">
+        <div className="w-full h-2/5 "></div>
+        {loading ? (
+          <div className="w-full  flex">
+            <CircularProgress color="inherit" />
+          </div>
+        ) : null}
+
+        <div className="w-full h-3/5 pb-10 " id="results">
+          {IWAs.map((iwa, index) => (
+            <div className="flex flex-row items-center" key={index}>
+              <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

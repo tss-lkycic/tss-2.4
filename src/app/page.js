@@ -31,8 +31,8 @@ export default function Page() {
 
   return (
     <div className="flex flex-col">
-      <div className="max-w-screen max-h-screen w-screen h-screen flex flex-col items-center overflow-scroll">
-        <div className="w-full flex flex-col mt-[2rem] items-center ">
+      <div className="flex flex-col items-center overflow-scroll">
+        <div className="w-full flex flex-col mt-[2rem] items-center">
           <Image src={new_logo} width={100} alt="Logo" className="m-2"></Image>
           <h1 className="text-xl tracking-[1rem] mt-2 text-center font-medium">
             STAK
@@ -40,7 +40,7 @@ export default function Page() {
           {expand ? (
             <div className="flex flex-col ml-[13rem] text-xl tracking-[1rem] text-start mb-[3rem]">
               <h1>Skills</h1> <h1 className="ml-[1.5rem]">Tasks</h1>
-              <h1 className="ml-[3rem]">Ai</h1>{" "}
+              <h1 className="ml-[3rem]">Ai</h1>
               <h1 className="ml-[4.5rem]">Knowledge</h1>
               <h1 className="ml-[3rem]">Alignment</h1>
               <h1 className="ml-[1.5rem]">Transition</h1>
@@ -48,11 +48,11 @@ export default function Page() {
             </div>
           ) : null}
         </div>
-        <p className="text-lg tracking-[0.15rem] m-2 ">
+        <p className="text-lg tracking-[0.15rem] m-2 text-center">
           Craft Your Career with Task.
         </p>
-        <div className="flex flex-col w-1/2 tracking-[0.15rem] ">
-          <p className="  text-xs">
+        <div className="flex flex-col w-3/4 md:w-1/2 tracking-[0.15rem] ">
+          <p className="text-xs">
             Step forward into a future where your career choices are aligned
             with your distinct skills and aspirations. Translate your daily
             tasks into industry-recognized activities, revealing tailored career
@@ -97,7 +97,9 @@ export default function Page() {
             </button>
           )}
         </div>
-        <div className="w-1/2 flex flex-row mt-5 justify-between">
+
+        {/* nav icons */}
+        <div className="sm:w-1/2 flex flex-row mt-5 justify-between">
           <Link href="/translate">
             <div className=" flex flex-col justify-center items-center">
               <Image
@@ -113,7 +115,7 @@ export default function Page() {
           </Link>
           <div className="flex justify-center items-center">
             <Image src={line} width={30} alt="Logo" className="m-2"></Image>
-          </div>{" "}
+          </div>
           <Link href="/compare">
             <div className=" flex flex-col justify-center items-center">
               <Image
@@ -144,9 +146,11 @@ export default function Page() {
             </div>{" "}
           </Link>
         </div>
+
+        {/* landing pages */}
         <div className="flex flex-col w-full mt-[8rem] gap-[5rem]">
-          <div className="flex flex-row w-full">
-            <div className="w-1/2 flex flex-row p-10 justify-center items-center">
+          <div className="flex flex-col md:flex-row w-full justify-center items-center">
+            <div className="w-full md:w-1/2 flex flex-row p-10 justify-center items-center">
               <Image
                 src={translate}
                 alt="translate"
@@ -162,16 +166,23 @@ export default function Page() {
                 <Link href="/translate">
                   <button className="self-start text-xs  underline font-bold ">
                     TRY NOW
-                  </button>{" "}
+                  </button>
                 </Link>
               </div>
             </div>
-
-            <Image src={translate_gif} alt="gif" className="w-1/2"></Image>
+            <Image
+              src={translate_gif}
+              alt="gif"
+              className=" w-3/4 md:w-1/2"
+            ></Image>
           </div>
-          <div className="flex flex-row w-full ">
-            <Image src={compare_gif} alt="gif" className="w-1/2"></Image>
-            <div className="w-1/2 flex flex-row p-10 justify-center items-center">
+          <div className="flex flex-col md:flex-row w-full justify-center items-center">
+            <Image
+              src={compare_gif}
+              alt="gif"
+              className="w-1/2 md:block hidden"
+            ></Image>
+            <div className="w-full md:w-1/2 flex flex-row p-10 justify-center items-center">
               <Image
                 src={compare_logo}
                 alt="compare"
@@ -188,13 +199,18 @@ export default function Page() {
                 <Link href="/compare">
                   <button className="self-start text-xs underline font-bold ">
                     TRY NOW
-                  </button>{" "}
+                  </button>
                 </Link>
               </div>
             </div>
-          </div>{" "}
-          <div className="flex flex-row w-full">
-            <div className="w-1/2 flex flex-row p-10 justify-center items-center">
+            <Image
+              src={compare_gif}
+              alt="gif"
+              className="w-3/4 md:hidden"
+            ></Image>
+          </div>
+          <div className="flex flex-col md:flex-row w-full justify-center items-center">
+            <div className="w-full md:w-1/2 flex flex-row p-10 justify-center items-center">
               <Image
                 src={transition}
                 alt="transition"
@@ -208,16 +224,19 @@ export default function Page() {
                   that match your skills and experiences. This capability
                   empowers you to make informed decisions about your career
                   trajectory.
-                </p>{" "}
+                </p>
                 <Link href="/transition">
                   <button className="self-start text-xs  underline font-bold ">
                     TRY NOW
-                  </button>{" "}
+                  </button>
                 </Link>
               </div>
             </div>
-
-            <Image src={transition_gif} alt="gif" className="w-1/2"></Image>
+            <Image
+              src={transition_gif}
+              alt="gif"
+              className="w-3/4 md:w-1/2"
+            ></Image>
           </div>
         </div>
         <p className="mt-[12rem] text-xs mb-[6rem]">Copyright © 2024.</p>

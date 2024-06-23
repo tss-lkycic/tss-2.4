@@ -45,6 +45,7 @@ export default function Chat() {
           .map((sentence) => sentence.replace(/\n/g, ""))
           .filter((sentence) => sentence.trim() !== "");
         setResponse(sentences);
+        console.log("Latest response from OpenAI:" + sentences)
         // fetchData(sentences);
       } else {
         setResponse([]);

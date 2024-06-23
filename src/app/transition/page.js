@@ -607,21 +607,17 @@ export default function Chat() {
 
   return (
     <div
-      className="w-screen h-screen flex flex-col overflow-scroll"
+      className="w-screen min-h-screen flex flex-col overflow-scroll"
       id="results"
     >
       <div
-        className={`flex flex-row w-full  ${
+        className={`flex flex-col md:flex-row w-full ${
           final ? "h-2/5" : "h-full"
         } text-[#555555] `}
       >
-        <div
-          className={`flex flex-col w-1/2 ${
-            final ? "h-full" : "h-full "
-          } tracking-[0.10rem]`}
-        >
-          <div className={`w-full h-2/5  ${final ? "h-full" : "h-2/5"}`}>
-            <div className="px-10 pt-5 w-2/3">
+        <div className={`flex flex-col md:w-1/2  tracking-[0.10rem]`}>
+          <div className={`w-full  ${final ? "md:h-full" : null}`}>
+            <div className="px-10 pt-5 md:w-2/3">
               <div className="flex flex-row items-center py-2 font-medium">
                 <Image
                   src={transition}
@@ -804,8 +800,8 @@ export default function Chat() {
         </div>
 
         <div
-          className="flex flex-col w-1/2 justify-center items-center
-           tracking-[0.10rem] h-full"
+          className={`flex flex-col w-1/2 justify-center items-center
+           tracking-[0.10rem] h-full ${final ? null : "md:h-screen"} `}
         >
           {loading ? <CircularProgress color="inherit" /> : null}
         </div>

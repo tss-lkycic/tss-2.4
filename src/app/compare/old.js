@@ -47,14 +47,13 @@ export default function Chat() {
   const [s_score, setSScore] = useState(0);
   const [d_score, setDScore] = useState(0);
   const responseRef = useRef(null);
-  const [user, setUser] = useState();
+  const [user, setUser] = useState(generateID);
   const [completed1, setCompleted1] = useState(false);
   const [completed2, setCompleted2] = useState(false);
   const [sentRequest, setSentRequest] = useState(false);
   const [iwa1ID, setiwa1ID] = useState("");
   const [iwa2ID, setiwa2ID] = useState("");
   const [loading, setLoading] = useState(false);
-  const [callTo1Done, setCallTo1Done] = useState(false);
 
   useEffect(() => {
     const latestResponse = Object.values(messages).pop();
@@ -76,65 +75,19 @@ export default function Chat() {
     }
   }, [messages]);
 
-  function compareInputs() {
-    setLoading(true);
-    //first input
-    queryInput(1);
-  }
+  useEffect(() => {
+    console.log("IWAs 1: ", IWAs1);
+  }, [IWAs1]);
+  useEffect(() => {
+    console.log("IWAs 2: ", IWAs2);
+    handleSplitTasks(IWAs1, IWAs2);
+  }, [IWAs2]);
 
-  function queryInput(inputNum) {
-    console.log(`querying ${inputNum == 1 ? 'first' : 'second'} input`);
-
-    if (inputNum == 1) {
-        setiwa1ID(generateID());
-        processInput(input1, text1, job1, hobbies1);
-    } else {
-        setiwa2ID(generateID());
-        setInput1IWA(false);
-        setInput2IWA(true);
-        processInput(input2, text2, job2, hobbies2);
+  useEffect(() => {
+    if (completed1 === true && IWAs1.length > 0) {
+      queryInput2();
     }
-}
-
-function processInput(inputType, text, job, hobbies) {
-    if (inputType === "Text") {
-        getTasksFromText(text);
-    } else if (inputType === "URL") {
-        // URL processing code
-    } else if (inputType === "File") {
-        // File processing code
-    } else if (inputType === "Job") {
-        getTasksFromJob(job);
-    } else if (inputType === "Hobbies") {
-        getTasksFromHobbies(hobbies);
-    }
-}
-
-  async function invokeTask(tasklist, userID) {
-    try {
-      // Data to send in the request body
-
-      const requestData = {
-        user_id: userID,
-        task: tasklist,
-      };
-      console.log(requestData);
-      // Call the first API with data in the request body
-      const response1 = await fetch("/api/invokeTask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestData),
-        // body: requestData,
-      });
-      const data1 = await response1.json();
-      console.log("Response from first API:", data1);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
-
+  }, [completed1]);
   useEffect(() => {
     // Store the current response in a ref
     responseRef.current = response;
@@ -149,28 +102,14 @@ function processInput(inputType, text, job, hobbies) {
       ) {
         // If response is stable and not empty, call fetchData
         console.log("This is the latest response:", response);
-        if (callTo1Done === false) {
-          setCallTo1Done(true);
+        if (user === iwa1ID) {
           console.log("this is for query 1");
-          queryInput(2);
-          invokeTask(response, iwa1ID);
-          setTimeout(() => {
-            getIWAsForFirstInput(response, iwa1ID);
-            console.log("polling 1st iwas")
-          }, 3000);
-
-        } else {
-          console.log("this is for query 2")
-          invokeTask(response, iwa2ID);
-          setTimeout(() => {
-            getIWAsForSecondInput(response, iwa2ID);
-            console.log("polling 2nd iwas")
-
-          }, 3000);
-
-        };
+        } else console.log("this is for query 2");
         setSentRequest(true);
-        
+        invokeTask(response);
+        setTimeout(() => {
+          getIWAs(response);
+        }, 3000);
       }
     }, 1500); // Adjust the delay time as needed
 
@@ -178,97 +117,18 @@ function processInput(inputType, text, job, hobbies) {
     return () => clearTimeout(timeout);
   }, [response]);
 
+  function generateID() {
+    let id = "";
+    const characters = "0123456789";
+    const length = 8;
 
-
-  async function getIWAsForFirstInput(tasklist, userID) {
-    try {
-        let noOfTasksInQueue = Infinity;
-        while (noOfTasksInQueue > 0) {
-            const requestData = { user_id: userID, task: tasklist };
-            const response = await fetch("/api/tasktoIWA", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(requestData)
-            });
-            const data = await response.json();
-            noOfTasksInQueue = data.no_of_tasks_in_queue;
-
-            if (noOfTasksInQueue > 0) {
-                const iwas = data.body;
-                const iwa_arr = JSON.parse(iwas);
-                processIWA(iwa_arr, 1);
-            } else {
-                console.log("No tasks in queue. Exiting loop for the first input.");
-                const iwas = data.body;
-                const iwa_arr = JSON.parse(iwas);
-                processIWA(iwa_arr);
-                setTimeout(() => setCompleted1(true), 3000);
-            }
-            await new Promise(resolve => setTimeout(resolve, 3000));
-        }
-    } catch (error) {
-        console.error("Error in getIWAsForFirstInput:", error);
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      id += characters.charAt(randomIndex);
     }
-}
 
-async function getIWAsForSecondInput(tasklist, userID) {
-  try {
-      let noOfTasksInQueue = Infinity;
-      while (noOfTasksInQueue > 0) {
-          const requestData = { user_id: userID, task: tasklist };
-          const response = await fetch("/api/tasktoIWA", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(requestData)
-          });
-          const data = await response.json();
-          noOfTasksInQueue = data.no_of_tasks_in_queue;
-
-          if (noOfTasksInQueue > 0) {
-              const iwas = data.body;
-              const iwa_arr = JSON.parse(iwas);
-              processIWA(iwa_arr);
-          } else {
-              console.log("No tasks in queue. Exiting loop for the second input.");
-              const iwas = data.body;
-              const iwa_arr = JSON.parse(iwas);
-              processIWA(iwa_arr);
-              setTimeout(() => setCompleted2(true), 3000);
-          }
-          await new Promise(resolve => setTimeout(resolve, 3000));
-      }
-  } catch (error) {
-      console.error("Error in getIWAsForSecondInput:", error);
+    return id;
   }
-}
-
-
- 
-  function processIWA(array, inputNum) {
-    let iwa_list = [];
-    for (let i = 0; i < array.length; i++) {
-      const iwa_item = array[i];
-      iwa_list.push(iwa_item);
-    }
-    iwa_list = Array.from(new Set(iwa_list));
-    console.log(iwa_list, "IWAs");
-    //setIWAs(iwa_list);
-    if (inputNum === 1) {
-      setIWAs1(iwa_list);
-      setInput1IWA(false);
-    } else {
-      setIWAs2(iwa_list);
-      setInput2IWA(false);
-    }
-  }
-useEffect(() => {
-    console.log("IWAs 1: ", IWAs1);
-  }, [IWAs1]);
-  useEffect(() => {
-    console.log("IWAs 2: ", IWAs2);
-    handleSplitTasks(IWAs1, IWAs2);
-  }, [IWAs2]);
-
 
   function handleSplitTasks(list1, list2) {
     // Initialize arrays to store similar and different strings
@@ -303,44 +163,28 @@ useEffect(() => {
     // setDifferentTasks2(differentStrings);
     // getScores(similarStrings, IWAs2);
   }
-  
-  function getTasksFromText(text) {
-    const userText = text;
-    append({
-      role: "user",
-      content:
-        userText +
-        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each text to less than 10 words.",
-    });
+
+  function getScores(similarlist, list2) {
+    // Calculate the length of the second list
+    const totalStrings = list2.length;
+
+    // Calculate the number of different strings between list1 and list2
+    const differentStrings = totalStrings - similarlist.length;
+
+    // Calculate the scores as percentages
+    const similarScore = (similarlist.length / totalStrings) * 100;
+    const differentScore = (differentStrings / totalStrings) * 100;
+    console.log(s_score, d_score);
+    if (similarScore === NaN) {
+      setSScore(0);
+    } else setSScore(similarScore.toFixed(1));
+    if (differentScore === NaN) {
+      setDScore(0);
+    } else setDScore(differentScore.toFixed(1));
   }
-
-  function getTasksFromJob(job) {
-    const userJob = job;
-    append({
-      role: "user",
-      content:
-        "Create a list of tasks for the job," +
-        userJob +
-        "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
-    });
-  }
-
-  function getTasksFromHobbies(hobbies) {
-    const userHobbies = hobbies;
-    append({
-      role: "user",
-      content:
-        "For each hobby or daily activity in this list:" +
-        userHobbies +
-        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events. Keep each sentence shorter than 10 words.",
-    });
-  }
-
-
 
   function handleReset() {
+    setIWAs([]);
     setHobbies1("");
     setText1("");
     setURL1("");
@@ -356,32 +200,79 @@ useEffect(() => {
     setCompleted1(false);
     setCompleted2(false);
     location.reload();
-    setIWAs1([]);
-    setIWAs2([]);
-    setCallTo1Done(false);
-    setiwa1ID("");
-    setiwa2ID("");
   }
-
-  function handleSave() { }
-
-
-  function handleSelectInput(setInput, setQueryURL, setQueryText, setQueryPDF, setQueryJob, setQueryHobbies, value) {
-    setInput(value);
-    setQueryURL(value === "URL");
-    setQueryText(value === "Text");
-    setQueryPDF(value === "PDF");
-    setQueryJob(value === "Job");
-    setQueryHobbies(value === "Hobbies");
-    setIWAs([]);
-  }
-
+  function handleSave() {}
   function handleSelectInput1(value) {
-    handleSelectInput(setInput1, setQueryURl1, setQueryText1, setQueryPDF1, setQueryJob1, setQueryHobbies1, value);
+    setInput1(value);
+    if (value === "URL") {
+      setQueryURl1(true);
+      setQueryText1(false);
+      setQueryPDF1(false);
+      setQueryJob1(false);
+      setQueryHobbies1(false);
+    } else if (value === "Text") {
+      setQueryURl1(false);
+      setQueryText1(true);
+      setQueryPDF1(false);
+      setQueryJob1(false);
+      setQueryHobbies1(false);
+    } else if (value === "PDF") {
+      setQueryURl1(false);
+      setQueryText1(false);
+      setQueryPDF1(true);
+      setQueryJob1(false);
+      setQueryHobbies1(false);
+    } else if (value === "Job") {
+      setQueryURl1(false);
+      setQueryText1(false);
+      setQueryPDF1(false);
+      setQueryJob1(true);
+      setQueryHobbies1(false);
+    } else if (value === "Hobbies") {
+      setQueryURl1(false);
+      setQueryText1(false);
+      setQueryPDF1(false);
+      setQueryJob1(false);
+      setQueryHobbies1(true);
+    }
+    setIWAs([]);
+    setUser(generateID());
   }
-
   function handleSelectInput2(value) {
-    handleSelectInput(setInput2, setQueryURl2, setQueryText2, setQueryPDF2, setQueryJob2, setQueryHobbies2, value);
+    setInput2(value);
+    if (value === "URL") {
+      setQueryURl2(true);
+      setQueryText2(false);
+      setQueryPDF2(false);
+      setQueryJob2(false);
+      setQueryHobbies2(false);
+    } else if (value === "Text") {
+      setQueryURl2(false);
+      setQueryText2(true);
+      setQueryPDF2(false);
+      setQueryJob2(false);
+      setQueryHobbies2(false);
+    } else if (value === "PDF") {
+      setQueryURl2(false);
+      setQueryText2(false);
+      setQueryPDF2(true);
+      setQueryJob2(false);
+      setQueryHobbies2(false);
+    } else if (value === "Job") {
+      setQueryURl2(false);
+      setQueryText2(false);
+      setQueryPDF2(false);
+      setQueryJob2(true);
+      setQueryHobbies2(false);
+    } else if (value === "Hobbies") {
+      setQueryURl2(false);
+      setQueryText2(false);
+      setQueryPDF2(false);
+      setQueryJob2(false);
+      setQueryHobbies2(true);
+    }
+    setIWAs([]);
+    setUser(generateID());
   }
 
   function handleJobChange1(e) {
@@ -403,28 +294,234 @@ useEffect(() => {
     const textContent = e.target.value;
     setText2(textContent);
   }
+  //   function handleURLChange(e) {
+  //     const urlLink = e.target.value;
+  //     setURL(urlLink);
+  //   }
+  function handleFileChange(e) {
+    console.log(e.target);
+  }
+  function processIWA(array) {
+    let iwa_list = [];
+    for (let i = 0; i < array.length; i++) {
+      const iwa_item = array[i];
+      iwa_list.push(iwa_item);
+    }
+    iwa_list = Array.from(new Set(iwa_list));
+    console.log(iwa_list, "IWAs");
+    setIWAs(iwa_list);
+    if (input1iwa === true) {
+      setIWAs1(iwa_list);
+      setInput1IWA(false);
+    } else {
+      setIWAs2(iwa_list);
+      setInput2IWA(false);
+    }
+  }
 
-  function generateID() {
-    let id = "";
-    const characters = "0123456789";
-    const length = 8;
-
-    for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      id += characters.charAt(randomIndex);
+  function compareInputs() {
+    setLoading(true);
+    console.log("querying first input");
+    setInput1IWA(true);
+    setiwa1ID(user);
+    if (input1 === "Text") {
+      getTasksFromText1();
+    } else if (input1 === "URL") {
+    } else if (input1 === "File") {
+    } else if (input1 === "Job") {
+      getTasksFromJob1();
+    } else if (input1 === "Hobbies") {
+      getTasksFromHobbies1();
     }
 
-    return id;
+    
+
   }
+  function queryInput2() {
+    console.log("querying second input");
+    const new_id = generateID();
+    setUser(new_id);
+    setiwa2ID(new_id);
+    setInput1IWA(false);
+    setInput2IWA(true);
+    if (input2 === "Text") {
+      getTasksFromText2();
+    } else if (input2 === "URL") {
+    } else if (input2 === "File") {
+    } else if (input2 === "Job") {
+      getTasksFromJob2();
+    } else if (input2 === "Hobbies") {
+      getTasksFromHobbies2();
+    }
+  }
+
+  function getTasksFromText1() {
+    const userText = text1;
+    append({
+      role: "user",
+      content:
+        userText +
+        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
+        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each text to less than 10 words.",
+    });
+  }
+
+  function getTasksFromText2() {
+    const userText = text2;
+    append({
+      role: "user",
+      content:
+        userText +
+        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
+        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each text to less than 10 words. ",
+    });
+  }
+
+  async function invokeTask(tasklist) {
+    try {
+      // Data to send in the request body
+
+      const requestData = {
+        user_id: user,
+        task: tasklist,
+      };
+      console.log(requestData);
+      // Call the first API with data in the request body
+      const response1 = await fetch("/api/invokeTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestData),
+        // body: requestData,
+      });
+      const data1 = await response1.json();
+      console.log("Response from first API:", data1);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  async function getIWAs(tasklist) {
+    try {
+      let noOfTasksInQueue = Infinity; // Set initially to a large number
+      while (noOfTasksInQueue > 0) {
+        const requestData = {
+          user_id: user,
+          task: tasklist,
+        };
+        console.log(requestData);
+
+        const response = await fetch("/api/tasktoIWA", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        });
+        const data = await response.json();
+        console.log("Response from API:", data);
+
+        noOfTasksInQueue = data.no_of_tasks_in_queue; // Update the variable
+
+        if (noOfTasksInQueue > 0) {
+          const iwas = data.body;
+          const iwa_arr = JSON.parse(iwas);
+          processIWA(iwa_arr);
+        } else if (iwa1ID === user) {
+          console.log("No tasks in queue. Exiting loop.");
+          console.log("process remainder");
+          const iwas = data.body;
+          const iwa_arr = JSON.parse(iwas);
+          processIWA(iwa_arr);
+          setTimeout(() => {
+            setCompleted1(true);
+          }, 3000);
+        } else if (iwa2ID === user) {
+          console.log("No tasks in queue. Exiting loop.");
+          console.log("process remainder");
+          const iwas = data.body;
+          const iwa_arr = JSON.parse(iwas);
+          processIWA(iwa_arr);
+
+          setTimeout(() => {
+            setCompleted2(true);
+            setLoading(false);
+          }, 3000);
+        }
+
+        // Optional: Add a delay between API calls to avoid flooding the server
+        await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  function getTasksFromFile() {}
+  function getTasksFromURL() {}
+  function getTasksFromJob1() {
+    const userJob = job1;
+    append({
+      role: "user",
+      content:
+        "Create a list of tasks for the job," +
+        userJob +
+        "," +
+        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
+    });
+  }
+
+  function getTasksFromJob2() {
+    const userJob = job2;
+    append({
+      role: "user",
+      content:
+        "Create a list of tasks for the job," +
+        userJob +
+        "," +
+        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
+    });
+  }
+  function getTasksFromHobbies1() {
+    const userHobbies = hobbies1;
+    append({
+      role: "user",
+      content:
+        "For each hobby or daily activity in this list:" +
+        userHobbies +
+        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events. Keep each sentence shorter than 10 words.",
+    });
+  }
+  function getTasksFromHobbies2() {
+    const userHobbies = hobbies2;
+    append({
+      role: "user",
+      content:
+        "For each hobby or daily activity in this list:" +
+        userHobbies +
+        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events. Keep each sentence shorter than 10 words.",
+    });
+  }
+
   return (
     <div
-      className="min-w-screen min-h-screen flex flex-col overflow-scroll"
+      className="bg-[#F6F6F6] min-w-screen min-h-screen xflex flex-col overflow-scroll"
       id="results"
     >
-      <div className="w-screen flex flex-col ">
-        <div className="flex flex-col md:flex-row w-full text-[#555555]">
-          <div className="flex flex-col md:w-1/2  h-full tracking-[0.10rem]">
-            <div className="w-full ">
+      <div className="bg-[#F6F6F6] w-screen h-[80vh]  flex flex-col ">
+        <Link href="/">
+          {" "}
+          <div className=" bg-[#474545] h-[3.5rem] flex justify-center items-center">
+            <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
+            <p className="ml-5 text-xl tracking-[0.5rem]  text-white">
+              S T A K
+            </p>
+          </div>
+        </Link>
+        <div className="flex flex-row w-full h-full text-[#555555]">
+          <div className="flex flex-col w-1/2  h-full tracking-[0.10rem]">
+            <div className="w-full h-1/2">
               <div className="px-10 pt-5 w-5/6">
                 <div className="flex flex-row items-center py-2 font-medium">
                   <Image
@@ -446,50 +543,55 @@ useEffect(() => {
               </div>
               <div className="px-10 pt-5 pb-5  justify-between ">
                 <button
-                  className={` pr-2 tracking-[0.10rem] ${queryText1
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` pr-2 tracking-[0.10rem] ${
+                    queryText1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput1("Text")}
                 >
                   Paste Text
                 </button>
                 |
                 <button
-                  className={` px-2 tracking-[0.10rem] ${queryURL1
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryURL1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput1("URL")}
                 >
                   Link URL
                 </button>
                 |
                 <button
-                  className={` px-2 tracking-[0.10rem] ${queryPDF1
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryPDF1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput1("PDF")}
                 >
                   Upload CV
                 </button>
                 |
                 <button
-                  className={` px-2 tracking-[0.10rem] ${queryJob1
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryJob1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput1("Job")}
                 >
                   Input Job
                 </button>{" "}
                 |
                 <button
-                  className={` px-2 tracking-[0.10rem] ${queryHobbies1
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryHobbies1
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput1("Hobbies")}
                 >
                   Input Hobbies
@@ -547,7 +649,7 @@ useEffect(() => {
                   type="text"
                   className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
                   placeholder="Enter a URL here..."
-                // onChange={handleURLChange}
+                  // onChange={handleURLChange}
                 ></input>
               </div>
             ) : null}
@@ -563,9 +665,9 @@ useEffect(() => {
                   type="file"
                   id="file"
                   className="hidden"
-                // onChange={handleChange}
-                // onChange={handleFileChange}
-                // ref={hiddenFileInput}
+                  // onChange={handleChange}
+                  // onChange={handleFileChange}
+                  // ref={hiddenFileInput}
                 ></input>
               </div>
             ) : null}
@@ -586,17 +688,17 @@ useEffect(() => {
                   type="text"
                   className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
                   placeholder="List down your hobbies and/or daily activities"
-                // value={hobbies}
-                // onChange={handleHobbiesChange1}
+                  // value={hobbies}
+                  // onChange={handleHobbiesChange1}
                 ></textarea>
               </div>
             ) : null}
             {/* </div> */}
           </div>
 
-          <div className="flex flex-col md:w-1/2  h-full">
-            <div className="  w-full flex flex-col ">
-              <div className="px-10 pt-5 w-2/3 opacity-0 hidden md:block">
+          <div className="flex flex-col w-1/2  h-full">
+            <div className=" h-1/2  w-full flex flex-col ">
+              <div className="px-10 pt-5 w-2/3 opacity-0">
                 <div className="flex flex-row items-center py-2 font-medium">
                   <Image
                     src={compare_logo}
@@ -614,52 +716,57 @@ useEffect(() => {
                   ut labore et dolore magna aliqua.
                 </p>
               </div>
-              <div className="pl-5 pr-10 h-fit pb-5 pt-8 md:pt-5 flex justify-between w-full">
+              <div className="pl-5 pr-10 h-fit pb-5 pt-5 flex justify-between w-full">
                 <button
-                  className={` pr-2 tracking-[0.10rem] ${queryText2
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` pr-2 tracking-[0.10rem] ${
+                    queryText2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput2("Text")}
                 >
                   Paste Text
                 </button>
                 |
                 <button
-                  className={` px-2 tracking-[0.10rem] ${queryURL2
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryURL2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput2("URL")}
                 >
                   Link URL
                 </button>
                 |
                 <button
-                  className={` px-2 tracking-[0.10rem] ${queryPDF2
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryPDF2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput2("PDF")}
                 >
                   Upload CV
                 </button>
                 |
                 <button
-                  className={` px-2 tracking-[0.10rem] ${queryJob2
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryJob2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput2("Job")}
                 >
                   Input Job
                 </button>
                 |
                 <button
-                  className={` px-2 tracking-[0.10rem] ${queryHobbies2
-                    ? "text-md text-[#555555]"
-                    : "text-sm text-gray-400"
-                    }`}
+                  className={` px-2 tracking-[0.10rem] ${
+                    queryHobbies2
+                      ? "text-md text-[#555555]"
+                      : "text-sm text-gray-400"
+                  }`}
                   onClick={() => handleSelectInput2("Hobbies")}
                 >
                   Input Hobbies
@@ -717,7 +824,7 @@ useEffect(() => {
                   type="text"
                   className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
                   placeholder="Enter a URL here..."
-                // onChange={handleURLChange}
+                  // onChange={handleURLChange}
                 ></input>
               </div>
             ) : null}
@@ -733,9 +840,9 @@ useEffect(() => {
                   type="file"
                   id="file"
                   className="hidden"
-                // onChange={handleChange}
-                // onChange={handleFileChange}
-                // ref={hiddenFileInput}
+                  // onChange={handleChange}
+                  // onChange={handleFileChange}
+                  // ref={hiddenFileInput}
                 ></input>
               </div>
             ) : null}
@@ -756,8 +863,8 @@ useEffect(() => {
                   type="text"
                   className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
                   placeholder="List down your hobbies and/or daily activities"
-                // value={hobbies}
-                // onChange={handleHobbiesChange}
+                  // value={hobbies}
+                  // onChange={handleHobbiesChange}
                 ></textarea>
               </div>
             ) : null}
@@ -769,6 +876,7 @@ useEffect(() => {
           onClick={handleReset}
           className="tracking-[0.10rem] bg-[#737171] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
+          {" "}
           <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
           Reset
         </button>
@@ -776,6 +884,7 @@ useEffect(() => {
           onClick={compareInputs}
           className="tracking-[0.10rem]  bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
+          {" "}
           <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
           Compare
         </button>
@@ -783,10 +892,11 @@ useEffect(() => {
           onClick={handleSave}
           className="tracking-[0.10rem] bg-[#737171] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
+          {" "}
           <DownloadIcon className="mr-3 text-[1.5rem]" />
           Save
         </button>
-      </div>
+      </div>{" "}
       {completed1 && completed2 && sentRequest ? (
         <div className="w-full  flex flex-row pb-10 text-[#555555]">
           <div className="w-1/2 flex flex-col pl-10 pr-5 pb-10">

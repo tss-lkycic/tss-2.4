@@ -320,10 +320,10 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex flex-row w-full h-full ">
-      <div className="flex flex-col w-1/2 h-full  tracking-[0.10rem]">
-        <div className="w-full h-2/5">
-          <div className="px-10 pt-5 w-2/3">
+    <div className="flex flex-col md:flex-row w-full md:h-full ">
+      <div className="flex flex-col w-full md:w-1/2 h-full  tracking-[0.10rem]">
+        <div className="w-full">
+          <div className="px-10 pt-5 md:w-2/3">
             <div className="flex flex-row items-center py-2 font-medium">
               <Image
                 src={translate}
@@ -390,34 +390,34 @@ export default function Chat() {
             </button>
           </div>
           {queryText ? (
-            <p className="px-10 text-xs pb-5">
+            <p className="px-10 text-xs mb-5">
               Please submit the text you wish to convert into standardized task
               activities. This can be a job description, course description, or
               your resume content.
             </p>
           ) : null}
           {queryURL ? (
-            <p className="px-10 text-xs pb-5">
+            <p className="px-10 text-xs  mb-5">
               Please submit the URL with content that can be translated into
               standardized task activities. This can be a link to a job
               description, course description, or your resume.
             </p>
           ) : null}
           {queryPDF ? (
-            <p className="px-10 text-xs pb-5">
+            <p className="px-10 text-xs  mb-5">
               Please upload the file that has content that can be translated
               into standardized task activities. This can be a job description,
               course description, or your resume.
             </p>
           ) : null}
           {queryJob ? (
-            <p className="px-10 text-xs pb-5">
+            <p className="px-10 text-xs  mb-5">
               Please input a job title to generate a list of its standardized
               task activities.
             </p>
           ) : null}
           {queryHobbies ? (
-            <p className="px-10 text-xs pb-5">
+            <p className="px-10 text-xs  mb-5">
               Please input a list of hobbies and/or daily activities to generate
               a list of its standardized task activities.
             </p>
@@ -486,23 +486,23 @@ export default function Chat() {
             ></textarea>
           </div>
         ) : null}
-        <div className="px-10 flex gap-5">
+        <div className="px-10 flex justify-between">
           <button
             onClick={handleGenerate}
-            className=" bg-[#474545] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
+            className=" bg-[#474545] py-2 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5 text-center"
           >
             Generate
           </button>
           <button
             onClick={restartPage}
-            className=" bg-[#737171] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5"
+            className=" bg-[#737171] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5 text-center"
           >
             <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
             Reset
           </button>
           <button
             onClick={downloadImage}
-            className=" bg-[#737171] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5"
+            className=" bg-[#737171] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5 text-center"
           >
             <DownloadIcon className="mr-3 text-[1.5rem]" />
             Save
@@ -510,8 +510,8 @@ export default function Chat() {
         </div>
       </div>
 
-      <div className="flex flex-col w-1/2 h-full p-5">
-        <div className="w-full h-2/5 "></div>
+      <div className="flex flex-col w-full md:w-1/2 md:h-full m-5">
+        <div className="w-full md:h-2/5 "></div>
         {loading ? (
           <div className="w-full  flex">
             <CircularProgress color="inherit" />

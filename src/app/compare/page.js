@@ -503,13 +503,13 @@ export default function Chat() {
 
   return (
     <div
-      className="bg-[#F6F6F6] min-w-screen min-h-screen xflex flex-col overflow-scroll"
+      className="min-w-screen min-h-screen flex flex-col overflow-scroll"
       id="results"
     >
-      <div className="bg-[#F6F6F6] w-screen h-[80vh]  flex flex-col ">
-        <div className="flex flex-row w-full h-full text-[#555555]">
-          <div className="flex flex-col w-1/2  h-full tracking-[0.10rem]">
-            <div className="w-full h-1/2">
+      <div className="w-screen flex flex-col ">
+        <div className="flex flex-col md:flex-row w-full text-[#555555]">
+          <div className="flex flex-col md:w-1/2  h-full tracking-[0.10rem]">
+            <div className="w-full ">
               <div className="px-10 pt-5 w-5/6">
                 <div className="flex flex-row items-center py-2 font-medium">
                   <Image
@@ -684,9 +684,9 @@ export default function Chat() {
             {/* </div> */}
           </div>
 
-          <div className="flex flex-col w-1/2  h-full">
-            <div className=" h-1/2  w-full flex flex-col ">
-              <div className="px-10 pt-5 w-2/3 opacity-0">
+          <div className="flex flex-col md:w-1/2  h-full">
+            <div className="  w-full flex flex-col ">
+              <div className="px-10 pt-5 w-2/3 opacity-0 hidden md:block">
                 <div className="flex flex-row items-center py-2 font-medium">
                   <Image
                     src={compare_logo}
@@ -704,7 +704,7 @@ export default function Chat() {
                   ut labore et dolore magna aliqua.
                 </p>
               </div>
-              <div className="pl-5 pr-10 h-fit pb-5 pt-5 flex justify-between w-full">
+              <div className="pl-5 pr-10 h-fit pb-5 pt-8 md:pt-5 flex justify-between w-full">
                 <button
                   className={` pr-2 tracking-[0.10rem] ${
                     queryText2
@@ -864,7 +864,6 @@ export default function Chat() {
           onClick={handleReset}
           className="tracking-[0.10rem] bg-[#737171] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
-          {" "}
           <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
           Reset
         </button>
@@ -872,7 +871,6 @@ export default function Chat() {
           onClick={compareInputs}
           className="tracking-[0.10rem]  bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
-          {" "}
           <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
           Compare
         </button>
@@ -880,11 +878,10 @@ export default function Chat() {
           onClick={handleSave}
           className="tracking-[0.10rem] bg-[#737171] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
         >
-          {" "}
           <DownloadIcon className="mr-3 text-[1.5rem]" />
           Save
         </button>
-      </div>{" "}
+      </div>
       {completed1 && completed2 && sentRequest ? (
         <div className="w-full  flex flex-row pb-10 text-[#555555]">
           <div className="w-1/2 flex flex-col pl-10 pr-5 pb-10">

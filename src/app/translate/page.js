@@ -16,17 +16,11 @@ import html2canvas from "html2canvas";
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
     useChat();
-
-  const [inputtype, setInputType] = useState("Text");
-  const [queryURL, setQueryURl] = useState(false);
-  const [queryText, setQueryText] = useState(true);
-  const [queryPDF, setQueryPDF] = useState(false);
-  const [queryJob, setQueryJob] = useState(false);
-  const [queryHobbies, setQueryHobbies] = useState(false);
+  // can be text, job, hobby
+  const [inputType, setInputType] = useState("text");
   const [job, setJob] = useState("");
   const [hobbies, setHobbies] = useState("");
   const [text, setText] = useState("");
-  const [url, setURL] = useState("");
   const [response, setResponse] = useState([]);
   const [IWAs, setIWAs] = useState([]);
   const responseRef = useRef(null);
@@ -95,63 +89,14 @@ export default function Chat() {
     return id;
   }
 
-  function handleSelectItem(value) {
-    setInputType(value);
-    if (value === "URL") {
-      setQueryURl(true);
-      setQueryText(false);
-      setQueryPDF(false);
-      setQueryJob(false);
-      setQueryHobbies(false);
-    } else if (value === "Text") {
-      setQueryURl(false);
-      setQueryText(true);
-      setQueryPDF(false);
-      setQueryJob(false);
-      setQueryHobbies(false);
-    } else if (value === "PDF") {
-      setQueryURl(false);
-      setQueryText(false);
-      setQueryPDF(true);
-      setQueryJob(false);
-      setQueryHobbies(false);
-    } else if (value === "Job") {
-      setQueryURl(false);
-      setQueryText(false);
-      setQueryPDF(false);
-      setQueryJob(true);
-      setQueryHobbies(false);
-    } else if (value === "Hobbies") {
-      setQueryURl(false);
-      setQueryText(false);
-      setQueryPDF(false);
-      setQueryJob(false);
-      setQueryHobbies(true);
-    }
-    setIWAs([]);
-    setUser(generateID());
-  }
-
-  const hiddenFileInput = useRef(null);
-
-  const handleUpload = (event) => {
-    hiddenFileInput.current.click();
-  };
-
-  const handleChange = (event) => {
-    const fileUploaded = event.target.files[0];
-    handleFile(fileUploaded);
-  };
 
   function handleGenerate() {
     setLoading(true);
-    if (inputtype === "Text") {
+    if (inputType === "text") {
       getTasksFromText();
-    } else if (inputtype === "URL") {
-    } else if (inputtype === "File") {
-    } else if (inputtype === "Job") {
+    } else if (inputType === "job") {
       getTasksFromJob();
-    } else if (inputtype === "Hobbies") {
+    } else if (inputType === "hobby") {
       getTasksFromHobbies();
     }
   }
@@ -170,20 +115,11 @@ export default function Chat() {
     const hobbiesContent = e.target.value;
     setHobbies(hobbiesContent);
   }
-  function handleURLChange(e) {
-    const urlLink = e.target.value;
-    setURL(urlLink);
-  }
-
-  function handleFileChange(e) {
-    console.log(e.target);
-  }
 
   function restartPage() {
     setIWAs([]);
     setHobbies("");
     setText("");
-    setURL("");
     setJob("");
     generateID();
     location.reload();
@@ -283,8 +219,6 @@ export default function Chat() {
     }
   };
 
-  function getTasksFromFile() {}
-  function getTasksFromURL() {}
 
   function getTasksFromText() {
     const userText = text;
@@ -345,79 +279,47 @@ export default function Chat() {
           <div className="px-10 pt-5 pb-5 justify-between">
             <button
               className={` pr-2 tracking-[0.10rem] ${
-                queryText ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                inputType == 'text' ? "text-md text-[#555555]" : "text-sm text-gray-400"
               }`}
-              onClick={() => handleSelectItem("Text")}
+              onClick={() => setInputType("text")}
             >
               Paste Text
             </button>
             |
             <button
               className={` px-2 tracking-[0.10rem] ${
-                queryURL ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                inputType == 'job' ? "text-md text-[#555555]" : "text-sm text-gray-400"
               }`}
-              onClick={() => handleSelectItem("URL")}
-            >
-              Link URL
-            </button>
-            |
-            <button
-              className={` px-2 tracking-[0.10rem] ${
-                queryPDF ? "text-md text-[#555555]" : "text-sm text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("PDF")}
-            >
-              Upload CV
-            </button>
-            |
-            <button
-              className={` px-2 tracking-[0.10rem] ${
-                queryJob ? "text-md text-[#555555]" : "text-sm text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("Job")}
+              onClick={() => setInputType("job")}
             >
               Input Job
             </button>
             |
             <button
               className={` px-2 tracking-[0.10rem] ${
-                queryHobbies
+                inputType == 'hobby'
                   ? "text-md text-[#555555]"
                   : "text-sm text-gray-400"
               }`}
-              onClick={() => handleSelectItem("Hobbies")}
+              onClick={() => setInputType("hobby")}
             >
               Input Hobbies
             </button>
           </div>
-          {queryText ? (
+          { inputType == 'text' ? (
             <p className="px-10 text-xs mb-5">
               Please submit the text you wish to convert into standardized task
               activities. This can be a job description, course description, or
               your resume content.
             </p>
           ) : null}
-          {queryURL ? (
-            <p className="px-10 text-xs  mb-5">
-              Please submit the URL with content that can be translated into
-              standardized task activities. This can be a link to a job
-              description, course description, or your resume.
-            </p>
-          ) : null}
-          {queryPDF ? (
-            <p className="px-10 text-xs  mb-5">
-              Please upload the file that has content that can be translated
-              into standardized task activities. This can be a job description,
-              course description, or your resume.
-            </p>
-          ) : null}
-          {queryJob ? (
+          {inputType == 'job' ? (
             <p className="px-10 text-xs  mb-5">
               Please input a job title to generate a list of its standardized
               task activities.
             </p>
           ) : null}
-          {queryHobbies ? (
+          {inputType == 'hobby' ? (
             <p className="px-10 text-xs  mb-5">
               Please input a list of hobbies and/or daily activities to generate
               a list of its standardized task activities.
@@ -425,7 +327,7 @@ export default function Chat() {
           ) : null}
         </div>
 
-        {queryText ? (
+        {inputType == 'text' ? (
           <div className="px-10 text-black w-full flex flex-col">
             <textarea
               type="text"
@@ -436,36 +338,7 @@ export default function Chat() {
             ></textarea>
           </div>
         ) : null}
-        {queryURL ? (
-          <div className="px-10 text-black flex flex-col">
-            <input
-              value={url}
-              type="text"
-              className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
-              placeholder="Enter a URL here..."
-              onChange={handleURLChange}
-            ></input>
-          </div>
-        ) : null}
-        {queryPDF ? (
-          <div className="px-10 text-black  flex flex-col">
-            <button
-              onClick={handleUpload}
-              className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
-            >
-              Select File Here
-            </button>
-            <input
-              type="file"
-              id="file"
-              className="hidden"
-              onChange={handleChange}
-              // onChange={handleFileChange}
-              ref={hiddenFileInput}
-            ></input>
-          </div>
-        ) : null}
-        {queryJob ? (
+        {inputType == 'job' ? (
           <div className="px-10 text-black flex flex-col">
             <input
               type="text"
@@ -476,7 +349,7 @@ export default function Chat() {
             ></input>
           </div>
         ) : null}
-        {queryHobbies ? (
+        {inputType == 'hobby' ? (
           <div className="px-10 text-black flex flex-col">
             <textarea
               type="text"

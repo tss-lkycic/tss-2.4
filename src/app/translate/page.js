@@ -1,13 +1,10 @@
 "use client";
 
 import { useChat } from "ai/react";
-import logo from "/public/logo.svg";
-import new_logo from "/public/new_logo.svg";
 import translate from "/public/translate.svg";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import OpenAI from "openai";
 import Link from "next/link";
 import CircularProgress from "@mui/material/CircularProgress";
 import DownloadIcon from "@mui/icons-material/Download";
@@ -27,55 +24,6 @@ export default function Chat() {
   const [user, setUser] = useState(generateID());
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const latestResponse = Object.values(messages).pop();
-
-    if (latestResponse) {
-      const role = latestResponse.role;
-      if (role !== "user") {
-        // const sentences = latestResponse.content.split(", ");
-        const sentences = latestResponse.content
-          .split(/\d+\.\s/)
-          .map((sentence) => sentence.replace(/\n/g, ""))
-          .filter((sentence) => sentence.trim() !== "");
-        setResponse(sentences);
-        console.log("Latest response from OpenAI:" + sentences)
-        // fetchData(sentences);
-      } else {
-        setResponse([]);
-      }
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    console.log("useeffect log of IWA", IWAs);
-  }, [IWAs]);
-
-  useEffect(() => {
-    // Store the current response in a ref
-    responseRef.current = response;
-
-    // Set a timeout to trigger fetchData after a short delay
-    const timeout = setTimeout(() => {
-      // Check if both response and responseRef are not empty lists and the response is stable (i.e., not changed during the delay)
-      if (
-        responseRef.current !== null &&
-        responseRef.current.length > 0 &&
-        responseRef.current === response
-      ) {
-        // If response is stable and not empty, call fetchData
-        console.log("This is the latest response:", response);
-        invokeTask(response);
-        setTimeout(() => {
-          getIWAs(response);
-        }, 3000);
-      }
-    }, 1500); // Adjust the delay time as needed
-
-    // Cleanup the timeout if response changes before the delay ends
-    return () => clearTimeout(timeout);
-  }, [response]);
-
   function generateID() {
     let id = "";
     const characters = "0123456789";
@@ -93,11 +41,11 @@ export default function Chat() {
   function handleGenerate() {
     setLoading(true);
     if (inputType === "text") {
-      getTasksFromText();
+      getTasks("text", text);
     } else if (inputType === "job") {
-      getTasksFromJob();
+      getTasks("job", job);
     } else if (inputType === "hobby") {
-      getTasksFromHobbies();
+      getTasks("hobby", hobbies);
     }
   }
 
@@ -219,39 +167,54 @@ export default function Chat() {
     }
   };
 
+  async function getTasks(type, content) {
+    let userMessage;
+    if (type === "text") {
+      userMessage = `${content} Extract and summarize the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
+    } else if (type === "job") {
+      userMessage = `Create a list of tasks for the job: ${content}, even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
+    } else if (type === "hobby") {
+      userMessage = `For each hobby or daily activity in this list: ${content}, convert them into task sentences, each shorter than 10 words and return them such that each task is numbered.`;
+    }
 
-  function getTasksFromText() {
-    const userText = text;
-    append({
-      role: "user",
-      content:
-        userText +
-        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words. ",
-    });
-  }
-  function getTasksFromHobbies() {
-    const userHobbies = hobbies;
-    append({
-      role: "user",
-      content:
-        // userHobbies +
-        "For each hobby or daily activity in this list:" +
-        userHobbies +
-        ",convert them into tasks sentence, each shorter than 10 words and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
-    });
-  }
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "user",
+              content: userMessage,
+            },
+          ],
+        }),
+      });
 
-  function getTasksFromJob() {
-    const userJob = job;
-    append({
-      role: "user",
-      content:
-        "Create a list of tasks for the job," +
-        userJob +
-        "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
-    });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const responseText = await response.text();
+      console.log("Raw response text:", responseText);
+
+      const sentences = responseText
+        .split(/\d+\.\s/)
+        .map((sentence) => sentence.replace(/\n/g, ""))
+        .filter((sentence) => sentence.trim() !== "");
+
+      setResponse(sentences);
+      console.log(sentences);
+
+      invokeTask(sentences);
+      setTimeout(() => {
+        getIWAs(sentences);
+      }, 3000);
+    } catch (error) {
+      console.error("Error:", error);
+    }
   }
 
   return (

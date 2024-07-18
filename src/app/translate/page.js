@@ -9,20 +9,48 @@ import Link from "next/link";
 import CircularProgress from "@mui/material/CircularProgress";
 import DownloadIcon from "@mui/icons-material/Download";
 import html2canvas from "html2canvas";
+import ErrorModal from "../components/ErrorModal";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
-    useChat();
+    useChat({
+      onResponse: async (response) => {
+        try {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const responseText = await response.text();
+          console.log(responseText, "responseText");
+          const sentences = responseText
+            .split(/\d+\.\s/)
+            .map((sentence) => sentence.replace(/\n/g, ""))
+            .filter((sentence) => sentence.trim() !== "");
+
+          console.log("Processed response:", sentences);
+          invokeTask(sentences);
+          setTimeout(() => {
+            getIWAs(sentences);
+          }, 3000);
+        } catch (error) {
+          setError("An error occurred while processing the response.");
+          setLoading(false);
+        }
+      },
+      onError: (error) => {
+        const { error: errorMessage } = JSON.parse(error.message);
+        setError(`Error: ${errorMessage}`);
+        setLoading(false);
+      },
+    });
   // can be text, job, hobby
   const [inputType, setInputType] = useState("text");
   const [job, setJob] = useState("");
   const [hobbies, setHobbies] = useState("");
   const [text, setText] = useState("");
-  const [response, setResponse] = useState([]);
   const [IWAs, setIWAs] = useState([]);
-  const responseRef = useRef(null);
   const [user, setUser] = useState(generateID());
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   function generateID() {
     let id = "";
@@ -37,16 +65,20 @@ export default function Chat() {
     return id;
   }
 
-
   function handleGenerate() {
     setLoading(true);
+    let userMessage;
     if (inputType === "text") {
-      getTasks("text", text);
+      userMessage = `${text} Extract and summarize the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
     } else if (inputType === "job") {
-      getTasks("job", job);
+      userMessage = `Create a list of tasks for the job: ${job}, even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
     } else if (inputType === "hobby") {
-      getTasks("hobby", hobbies);
+      userMessage = `For each hobby or daily activity in this list: ${hobbies}, convert them into task sentences, each shorter than 10 words and return them such that each task is numbered.`;
     }
+    append({
+      role: "user",
+      content: userMessage,
+    });
   }
 
   function handleJobChange(e) {
@@ -76,7 +108,6 @@ export default function Chat() {
   async function invokeTask(tasklist) {
     try {
       // Data to send in the request body
-
       const requestData = {
         user_id: user,
         task: tasklist,
@@ -167,56 +198,6 @@ export default function Chat() {
     }
   };
 
-  async function getTasks(type, content) {
-    let userMessage;
-    if (type === "text") {
-      userMessage = `${content} Extract and summarize the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
-    } else if (type === "job") {
-      userMessage = `Create a list of tasks for the job: ${content}, even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
-    } else if (type === "hobby") {
-      userMessage = `For each hobby or daily activity in this list: ${content}, convert them into task sentences, each shorter than 10 words and return them such that each task is numbered.`;
-    }
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: userMessage,
-            },
-          ],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const responseText = await response.text();
-      console.log("Raw response text:", responseText);
-
-      const sentences = responseText
-        .split(/\d+\.\s/)
-        .map((sentence) => sentence.replace(/\n/g, ""))
-        .filter((sentence) => sentence.trim() !== "");
-
-      setResponse(sentences);
-      console.log(sentences);
-
-      invokeTask(sentences);
-      setTimeout(() => {
-        getIWAs(sentences);
-      }, 3000);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  }
-
   return (
     <div className="flex flex-col md:flex-row w-full md:h-full ">
       <div className="flex flex-col w-full md:w-1/2 h-full  tracking-[0.10rem]">
@@ -242,7 +223,9 @@ export default function Chat() {
           <div className="px-10 pt-5 pb-5 justify-between">
             <button
               className={` pr-2 tracking-[0.10rem] ${
-                inputType == 'text' ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                inputType == "text"
+                  ? "text-md text-[#555555]"
+                  : "text-sm text-gray-400"
               }`}
               onClick={() => setInputType("text")}
             >
@@ -251,7 +234,9 @@ export default function Chat() {
             |
             <button
               className={` px-2 tracking-[0.10rem] ${
-                inputType == 'job' ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                inputType == "job"
+                  ? "text-md text-[#555555]"
+                  : "text-sm text-gray-400"
               }`}
               onClick={() => setInputType("job")}
             >
@@ -260,7 +245,7 @@ export default function Chat() {
             |
             <button
               className={` px-2 tracking-[0.10rem] ${
-                inputType == 'hobby'
+                inputType == "hobby"
                   ? "text-md text-[#555555]"
                   : "text-sm text-gray-400"
               }`}
@@ -269,20 +254,20 @@ export default function Chat() {
               Input Hobbies
             </button>
           </div>
-          { inputType == 'text' ? (
+          {inputType == "text" ? (
             <p className="px-10 text-xs mb-5">
               Please submit the text you wish to convert into standardized task
               activities. This can be a job description, course description, or
               your resume content.
             </p>
           ) : null}
-          {inputType == 'job' ? (
+          {inputType == "job" ? (
             <p className="px-10 text-xs  mb-5">
               Please input a job title to generate a list of its standardized
               task activities.
             </p>
           ) : null}
-          {inputType == 'hobby' ? (
+          {inputType == "hobby" ? (
             <p className="px-10 text-xs  mb-5">
               Please input a list of hobbies and/or daily activities to generate
               a list of its standardized task activities.
@@ -290,7 +275,7 @@ export default function Chat() {
           ) : null}
         </div>
 
-        {inputType == 'text' ? (
+        {inputType == "text" ? (
           <div className="px-10 text-black w-full flex flex-col">
             <textarea
               type="text"
@@ -301,7 +286,7 @@ export default function Chat() {
             ></textarea>
           </div>
         ) : null}
-        {inputType == 'job' ? (
+        {inputType == "job" ? (
           <div className="px-10 text-black flex flex-col">
             <input
               type="text"
@@ -312,7 +297,7 @@ export default function Chat() {
             ></input>
           </div>
         ) : null}
-        {inputType == 'hobby' ? (
+        {inputType == "hobby" ? (
           <div className="px-10 text-black flex flex-col">
             <textarea
               type="text"
@@ -363,6 +348,7 @@ export default function Chat() {
           ))}
         </div>
       </div>
+      {error && <ErrorModal message={error} onClose={() => setError(null)} />}
     </div>
   );
 }

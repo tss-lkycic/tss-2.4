@@ -1,10 +1,6 @@
 "use client";
 
 import { useChat } from "ai/react";
-import logo from "/public/logo.svg";
-import OpenAI from "openai";
-import Link from "next/link";
-import new_logo from "/public/new_logo.svg";
 import transition from "/public/transition.svg";
 import Image from "next/image";
 // import { writeFile } from "fs/promises";
@@ -13,11 +9,36 @@ import { useEffect, useState, useRef } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CircularProgress from "@mui/material/CircularProgress";
 import html2canvas from "html2canvas";
-import { common } from "@mui/material/colors";
+import ErrorModal from "../components/ErrorModal";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
-    useChat();
+    useChat({
+      onResponse: async (response) => {
+        try {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const responseText = await response.clone().text();
+          console.log(responseText, "responseText");
+          const sentences = responseText
+            .split(/\d+\.\s/)
+            .map((sentence) => sentence.replace(/\n/g, ""))
+            .filter((sentence) => sentence.trim() !== "");
+
+          console.log("Processed response:", sentences);
+          setResponse(sentences);
+        } catch (error) {
+          setError("An error occurred while processing the response.");
+          setLoading(false);
+        }
+      },
+      onError: (error) => {
+        const { error: errorMessage } = JSON.parse(error.message);
+        setError(`Error: ${errorMessage}`);
+        setLoading(false);
+      },
+    });
 
   const [job, setJob] = useState("");
   const [genjob, setGenJob] = useState("");
@@ -51,25 +72,24 @@ export default function Chat() {
   const [same_list, setSameList] = useState([]);
   const [diff, setDiff] = useState("-");
   const [diff_list, setDiffList] = useState([]);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const latestResponse = Object.values(messages).pop();
+  // useEffect(() => {
+  //   const latestResponse = Object.values(messages).pop();
 
-    if (latestResponse) {
-      const role = latestResponse.role;
-      if (role !== "user") {
-        // const sentences = latestResponse.content.split(", ");
-        const sentences = latestResponse.content
-          .split(/\d+\.\s/)
-          .map((sentence) => sentence.replace(/\n/g, ""))
-          .filter((sentence) => sentence.trim() !== "");
-        setResponse(sentences);
-        // fetchData(sentences);
-      } else {
-        setResponse([]);
-      }
-    }
-  }, [messages]);
+  //   if (latestResponse) {
+  //     const role = latestResponse.role;
+  //     if (role !== "user") {
+  //       const sentences = latestResponse.content
+  //         .split(/\d+\.\s/)
+  //         .map((sentence) => sentence.replace(/\n/g, ""))
+  //         .filter((sentence) => sentence.trim() !== "");
+  //       setResponse(sentences);
+  //     } else {
+  //       setResponse([]);
+  //     }
+  //   }
+  // }, [messages]);
 
   useEffect(() => {
     console.log("iwas", IWAs);
@@ -945,6 +965,7 @@ export default function Chat() {
         </div>
       ) : null}
       {part1 ? <div></div> : null}
+      {error && <ErrorModal message={error} onClose={() => setError(null)} />}
     </div>
   );
 }

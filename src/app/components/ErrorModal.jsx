@@ -9,7 +9,7 @@ function ErrorModal({ message, onClose }) {
         <div className="flex justify-center">
           <button
             onClick={onClose}
-            className="w-1/2 bg-red-500 text-white py-2 rounded"
+            className="w-1/2 bg-gray-500 text-white py-2 rounded"
           >
             Close
           </button>

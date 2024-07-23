@@ -8,10 +8,36 @@ import Image from "next/image";
 import DownloadIcon from "@mui/icons-material/Download";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useEffect, useState, useRef } from "react";
+import ErrorModal from "../components/ErrorModal";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
-    useChat();
+    useChat({
+      onResponse: async (response) => {
+        try {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const responseText = await response.clone().text();
+          console.log(responseText, "responseText");
+          const sentences = responseText
+            .split(/\d+\.\s/)
+            .map((sentence) => sentence.replace(/\n/g, ""))
+            .filter((sentence) => sentence.trim() !== "");
+
+          setResponse(sentences);
+        } catch (error) {
+          setError("An error occurred while processing the response.");
+          setLoading(false);
+        }
+      },
+      onError: (error) => {
+        console.log("error", error);
+        const { error: errorMessage } = JSON.parse(error.message);
+        setError(`Error: ${errorMessage}`);
+        setLoading(false);
+      },
+    });
 
   const [input1, setInput1] = useState("text");
   const [input2, setInput2] = useState("text");
@@ -40,26 +66,7 @@ export default function Chat() {
   const [iwa2ID, setiwa2ID] = useState("");
   const [loading, setLoading] = useState(false);
   const [callTo1Done, setCallTo1Done] = useState(false);
-
-  useEffect(() => {
-    const latestResponse = Object.values(messages).pop();
-
-    if (latestResponse) {
-      const role = latestResponse.role;
-      if (role !== "user") {
-        // const sentences = latestResponse.content.split(", ");
-        const sentences = latestResponse.content
-          .split(/\d+\.\s/)
-          .map((sentence) => sentence.replace(/\n/g, ""))
-          .filter((sentence) => sentence.trim() !== "");
-
-        setResponse(sentences);
-        // fetchData(sentences);
-      } else {
-        setResponse([]);
-      }
-    }
-  }, [messages]);
+  const [error, setError] = useState(null);
 
   function compareInputs() {
     setLoading(true);
@@ -225,7 +232,6 @@ export default function Chat() {
     }
     iwa_list = Array.from(new Set(iwa_list));
     console.log(iwa_list, "IWAs");
-    //setIWAs(iwa_list);
     if (inputNum === 1) {
       setIWAs1(iwa_list);
       setInput1IWA(false);
@@ -372,10 +378,7 @@ export default function Chat() {
     return id;
   }
   return (
-    <div
-      className="min-w-screen min-h-screen flex flex-col overflow-scroll"
-      id="results"
-    >
+    <div className="flex flex-col" id="results">
       <div className="w-screen flex flex-col ">
         <div className="flex flex-col md:flex-row w-full text-[#555555]">
           <div className="flex flex-col md:w-1/2  h-full tracking-[0.10rem]">
@@ -490,6 +493,7 @@ export default function Chat() {
 
           <div className="flex flex-col md:w-1/2  h-full tracking-[0.10rem]">
             <div className="w-full ">
+              <div className=" h-36"></div>
               <div className="px-10 pt-5 pb-5  justify-between ">
                 <button
                   className={` pr-2 tracking-[0.10rem] ${
@@ -537,7 +541,7 @@ export default function Chat() {
                       value={text2}
                       className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
                       placeholder="Type or paste your text here..."
-                      onChange={handleTextChange1}
+                      onChange={handleTextChange2}
                     ></textarea>
                   </div>
                 </>
@@ -553,7 +557,7 @@ export default function Chat() {
                       type="text"
                       className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
                       value={job2}
-                      onChange={handleJobChange1}
+                      onChange={handleJobChange2}
                       placeholder="Enter a job title here..."
                     ></input>
                   </div>
@@ -571,7 +575,7 @@ export default function Chat() {
                       className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
                       placeholder="List down your hobbies and/or daily activities"
                       // value={hobbies}
-                      // onChange={handleHobbiesChange1}
+                      // onChange={handleHobbiesChange2}
                     ></textarea>
                   </div>
                 </>
@@ -644,6 +648,7 @@ export default function Chat() {
           </div>
         )
       )}
+      {error && <ErrorModal message={error} onClose={() => setError(null)} />}
     </div>
   );
 }

@@ -13,7 +13,9 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
         <TopBar />
-        <div className="bg-[#F6F6F6] text-[#555555] h-screen">{children}</div>
+        <div className="bg-[#F6F6F6] text-[#555555] min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );

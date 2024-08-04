@@ -3,11 +3,9 @@
 import { useChat } from "ai/react";
 import translate from "/public/translate.svg";
 import Image from "next/image";
-import { useState, useRef } from "react";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import CircularProgress from "@mui/material/CircularProgress";
-import DownloadIcon from "@mui/icons-material/Download";
 import html2canvas from "html2canvas";
 import ErrorModal from "../components/ErrorModal";
 
@@ -19,7 +17,7 @@ export default function Chat() {
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
-          const responseText = await response.text();
+          const responseText = await response.clone().text();
           console.log(responseText, "responseText");
           const sentences = responseText
             .split(/\d+\.\s/)
@@ -37,8 +35,12 @@ export default function Chat() {
         }
       },
       onError: (error) => {
-        const { error: errorMessage } = JSON.parse(error.message);
-        setError(`Error: ${errorMessage}`);
+        try {
+          const { error: errorMessage } = JSON.parse(error.message);
+          setError(`Error: ${errorMessage}`);
+        } catch (parseError) {
+          setError(`Error: ${error.message}`);
+        }
         setLoading(false);
       },
     });
@@ -94,15 +96,6 @@ export default function Chat() {
   function handleHobbiesChange(e) {
     const hobbiesContent = e.target.value;
     setHobbies(hobbiesContent);
-  }
-
-  function restartPage() {
-    setIWAs([]);
-    setHobbies("");
-    setText("");
-    setJob("");
-    generateID();
-    location.reload();
   }
 
   async function invokeTask(tasklist) {
@@ -199,10 +192,10 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row w-full md:h-full ">
-      <div className="flex flex-col w-full md:w-1/2 h-full  tracking-[0.10rem]">
+    <div className="flex flex-col md:flex-row w-full min-h-screen">
+      <div className="flex flex-col w-full md:w-1/2 h-full px-10 tracking-[0.10rem]">
         <div className="w-full">
-          <div className="px-10 pt-5 md:w-2/3">
+          <div className="pt-5 md:w-2/3">
             <div className="flex flex-row items-center py-2 font-medium">
               <Image
                 src={translate}
@@ -220,7 +213,7 @@ export default function Chat() {
               contributions.
             </p>
           </div>
-          <div className="px-10 pt-5 pb-5 justify-between">
+          <div className="pt-5 pb-5 justify-between">
             <button
               className={` pr-2 tracking-[0.10rem] ${
                 inputType == "text"
@@ -255,20 +248,20 @@ export default function Chat() {
             </button>
           </div>
           {inputType == "text" ? (
-            <p className="px-10 text-xs mb-5">
+            <p className="text-xs mb-5">
               Please submit the text you wish to convert into standardized task
               activities. This can be a job description, course description, or
               your resume content.
             </p>
           ) : null}
           {inputType == "job" ? (
-            <p className="px-10 text-xs  mb-5">
+            <p className="text-xs  mb-5">
               Please input a job title to generate a list of its standardized
               task activities.
             </p>
           ) : null}
           {inputType == "hobby" ? (
-            <p className="px-10 text-xs  mb-5">
+            <p className="text-xs  mb-5">
               Please input a list of hobbies and/or daily activities to generate
               a list of its standardized task activities.
             </p>
@@ -276,7 +269,7 @@ export default function Chat() {
         </div>
 
         {inputType == "text" ? (
-          <div className="px-10 text-black w-full flex flex-col">
+          <div className="text-black w-full flex flex-col">
             <textarea
               type="text"
               value={text}
@@ -287,7 +280,7 @@ export default function Chat() {
           </div>
         ) : null}
         {inputType == "job" ? (
-          <div className="px-10 text-black flex flex-col">
+          <div className="text-black flex flex-col">
             <input
               type="text"
               className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
@@ -298,7 +291,7 @@ export default function Chat() {
           </div>
         ) : null}
         {inputType == "hobby" ? (
-          <div className="px-10 text-black flex flex-col">
+          <div className="text-black flex flex-col">
             <textarea
               type="text"
               className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
@@ -308,42 +301,32 @@ export default function Chat() {
             ></textarea>
           </div>
         ) : null}
-        <div className="px-10 flex justify-between">
+        <div className="">
           <button
             onClick={handleGenerate}
-            className=" bg-[#474545] py-2 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5 text-center"
+            className=" bg-[#474545] py-2 text-white tracking-[0.10rem] rounded-md mt-5 text-center px-6"
           >
             Generate
-          </button>
-          <button
-            onClick={restartPage}
-            className=" bg-[#737171] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5 text-center"
-          >
-            <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
-            Reset
-          </button>
-          <button
-            onClick={downloadImage}
-            className=" bg-[#737171] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5 text-center"
-          >
-            <DownloadIcon className="mr-3 text-[1.5rem]" />
-            Save
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col w-full md:w-1/2 md:h-full m-5">
-        <div className="w-full md:h-2/5 "></div>
+      <div className=" relative flex flex-col justify-center items-center w-full md:w-1/2 md:h-100">
         {loading ? (
-          <div className="w-full  flex">
+          <div className="bg-[#D9D9D9] bg-opacity-70 flex items-center justify-center z-50 rounded-md h-3/4 md:w-[620px] w-11/12 absolute">
             <CircularProgress color="inherit" />
           </div>
         ) : null}
 
-        <div className="w-full h-3/5 pb-10 " id="results">
+        <div className="flex flex-col m-5" id="results">
           {IWAs.map((iwa, index) => (
-            <div className="flex flex-row items-center" key={index}>
-              <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>
+            <div
+              key={index}
+              className={`${
+                index % 2 === 0 ? "bg-[#D9D9D9] bg-opacity-40" : "bg-[#D9D9D9]"
+              } my-1 py-1.5 rounded-md`}
+            >
+              <p className="ml-2 tracking-[0.10rem]">{iwa}</p>
             </div>
           ))}
         </div>

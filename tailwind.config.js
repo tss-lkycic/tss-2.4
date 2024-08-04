@@ -12,6 +12,22 @@ module.exports = {
         "gradient-conic":
           "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
+      keyframes: {
+        slideDown: {
+          "0%": { opacity: 0, transform: "translateY(-20px)", display: "none" },
+          "1%": { display: "block" },
+          "100%": { opacity: 1, transform: "translateY(0)" },
+        },
+        slideUp: {
+          "0%": { opacity: 1, transform: "translateY(0)" },
+          "99%": { opacity: 0, transform: "translateY(-20px)" },
+          "100%": { display: "none" },
+        },
+      },
+      animation: {
+        slideDown: "slideDown 0.3s ease-out forwards",
+        slideUp: "slideUp 0.3s ease-out forwards",
+      },
     },
   },
   plugins: [],

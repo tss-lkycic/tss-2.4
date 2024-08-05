@@ -248,6 +248,12 @@ export default function Chat() {
     handleSplitTasks(IWAs1, IWAs2);
   }, [IWAs2]);
 
+  useEffect(() => {
+    if (completed1 && completed2 && sentRequest) {
+      setLoading(false);
+    }
+  }, [completed1, completed2, sentRequest]);
+
   function handleSplitTasks(list1, list2) {
     // Initialize arrays to store similar and different strings
     const similarStrings = [];
@@ -314,29 +320,6 @@ export default function Chat() {
     });
   }
 
-  function handleReset() {
-    setHobbies1("");
-    setText1("");
-    setJob1("");
-    setHobbies2("");
-    setText2("");
-    setJob2("");
-    generateID();
-    setSimilarTasks([]);
-    setDifferentTasks1([]);
-    setDifferentTasks2([]);
-    setCompleted1(false);
-    setCompleted2(false);
-    location.reload();
-    setIWAs1([]);
-    setIWAs2([]);
-    setCallTo1Done(false);
-    setiwa1ID("");
-    setiwa2ID("");
-  }
-
-  function handleSave() {}
-
   function handleSelectInput1(value) {
     setInput1(value);
   }
@@ -390,11 +373,11 @@ export default function Chat() {
                     width={30}
                     alt="Logo"
                     className=""
-                  ></Image>{" "}
+                  ></Image>
                   <h3 className="ml-5 text-xl tracking-[0.10rem]">
                     Task STAK Compare
                   </h3>
-                </div>{" "}
+                </div>
                 <p className="text-xs tracking-[0.10rem]">
                   Compare and evaluate your career activities against other task
                   portfolios, identifying overlaps and gaps. Infer strategic
@@ -493,7 +476,7 @@ export default function Chat() {
 
           <div className="flex flex-col md:w-1/2  h-full tracking-[0.10rem]">
             <div className="w-full ">
-              <div className=" h-36"></div>
+              <div className="md:h-36 mt-5 md:mt-0"></div>
               <div className="px-10 pt-5 pb-5  justify-between ">
                 <button
                   className={` pr-2 tracking-[0.10rem] ${
@@ -584,70 +567,87 @@ export default function Chat() {
           </div>
         </div>
       </div>
-      <div className="w-full text-[#555555] flex my-2 justify-center ">
-        <button
-          onClick={handleReset}
-          className="tracking-[0.10rem] bg-[#737171] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
-        >
-          <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
-          Reset
-        </button>
-        <button
-          onClick={compareInputs}
-          className="tracking-[0.10rem]  bg-[#474545] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
-        >
-          <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
-          Compare
-        </button>
-        <button
-          onClick={handleSave}
-          className="tracking-[0.10rem] bg-[#737171] mx-2 py-2 px-5 rounded-lg my-5 w-fit text-white"
-        >
-          <DownloadIcon className="mr-3 text-[1.5rem]" />
-          Save
-        </button>
+      <div className="w-full text-[#555555] flex my-2 justify-center">
+        {loading ? (
+          <button
+            disabled
+            className="bg-[#474545] w-36 h-10 bg-opacity-50 rounded-lg my-5 text-white px-8"
+          >
+            <CircularProgress color="inherit" size="1.5rem" />
+          </button>
+        ) : (
+          <button
+            onClick={compareInputs}
+            className="tracking-[0.10rem] w-36 h-10 bg-[#474545] rounded-lg my-5 text-white"
+          >
+            Compare
+          </button>
+        )}
       </div>
+
       {completed1 && completed2 && sentRequest ? (
-        <div className="w-full  flex flex-row pb-10 text-[#555555]">
-          <div className="w-1/2 flex flex-col pl-10 pr-5 pb-10">
-            <p className="py-2 font-semibold">Similar Tasks: </p>
-            {similarTasks.map((iwa) => (
-              <div key={iwa.id}>
-                <p className="pb-2">{iwa}</p>
-              </div>
-            ))}{" "}
-            <p className="py-2 font-semibold">Other Tasks from Input 1: </p>
-            {differentTasks1.map((iwa) => (
-              <div key={iwa.id}>
-                <p className=" pb-2 bg-[#9CD1BC]">{iwa}</p>
+        <div className="flex flex-col pb-10 text-[#555555] items-center md:mx-0 mx-5">
+          <div className="md:w-1/2 max-w-[450px] flex flex-col mt-3 mb-8">
+            <div className="flex justify-center">
+              <p className="w-28 text-center py-2 font-semibold bg-[#54BF94] text-white rounded-lg mb-3">
+                Similar Tasks
+              </p>
+            </div>
+            {similarTasks.map((iwa, index) => (
+              <div
+                key={index}
+                className={`${
+                  index % 2 === 0
+                    ? "bg-[#D9D9D9] bg-opacity-40"
+                    : "bg-[#D9D9D9]"
+                } my-1 rounded-md`}
+              >
+                <p className="p-2">{iwa}</p>
               </div>
             ))}
           </div>
-          <div className="w-1/2 flex flex-col pl-5 pr-10 pb-10">
-            <p className="py-2 font-semibold">Similar Tasks:</p>
-
-            {similarTasks.map((iwa) => (
-              <div key={iwa.id}>
-                <p className=" pb-2">{iwa}</p>
+          <div className="flex md:flex-row flex-col md:items-start items-center gap-8">
+            <div className="md:w-1/2 flex flex-col">
+              <div className="flex justify-center">
+                <p className="w-44 text-center py-2 font-semibold bg-[#A6AED7] text-white rounded-lg mb-3">
+                  Input 1 Unique Tasks
+                </p>
               </div>
-            ))}
-
-            <p className="py-2 font-semibold ">Other Tasks from Input 2: </p>
-
-            {differentTasks2.map((iwa) => (
-              <div key={iwa.id}>
-                <p className="  pb-2 bg-[#F5D3CC]">{iwa}</p>
+              {differentTasks1.map((iwa, index) => (
+                <div
+                  key={index}
+                  className={`${
+                    index % 2 === 0
+                      ? "bg-[#D9D9D9] bg-opacity-40"
+                      : "bg-[#D9D9D9]"
+                  } my-1 py-1.5 rounded-md`}
+                >
+                  <p className="p-2">{iwa}</p>
+                </div>
+              ))}
+            </div>
+            <div className="md:w-1/2 flex flex-col">
+              <div className="flex justify-center">
+                <p className="w-44 text-center py-2 font-semibold bg-[#A6AED7] text-white rounded-lg mb-3">
+                  Input 2 Unique Tasks
+                </p>
               </div>
-            ))}
+              {differentTasks2.map((iwa, index) => (
+                <div
+                  key={index}
+                  className={`${
+                    index % 2 === 0
+                      ? "bg-[#D9D9D9] bg-opacity-40"
+                      : "bg-[#D9D9D9]"
+                  } my-1 py-1.5 rounded-md`}
+                >
+                  <p className="p-2">{iwa}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      ) : (
-        loading && (
-          <div className="w-full text-gray-400 flex justify-center pb-10">
-            <CircularProgress color="inherit" />
-          </div>
-        )
-      )}
+      ) : null}
       {error && <ErrorModal message={error} onClose={() => setError(null)} />}
     </div>
   );

@@ -14,10 +14,29 @@ import MenuItem from "./MenuItem";
 export default function TopBar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
 
   const toggleMenu = () => {
     setIsMenuOpen((prev) => !prev);
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
 
   return (
     <div className="bg-[#474545] h-[3.5rem] w-full flex flex-row justify-between">
@@ -29,6 +48,7 @@ export default function TopBar() {
           <GiHamburgerMenu />
         </button>
         <div
+          ref={menuRef}
           className={`absolute top-14 z-10 w-[270px] bg-[#474545] border-t border-white text-white transition-all duration-300 ease-in-out ${
             isMenuOpen ? "animate-slideDown" : "animate-slideUp"
           }`}

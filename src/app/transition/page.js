@@ -557,7 +557,7 @@ export default function Chat() {
 
   return (
     <div
-      className="w-screen min-h-screen flex flex-col overflow-hidden	"
+      className="w-screen min-h-screen flex flex-col overflow-x-hidden"
       id="results"
     >
       <div
@@ -565,9 +565,11 @@ export default function Chat() {
           stage == 4 ? "h-2/5" : "h-full"
         } text-[#555555] `}
       >
-        <div className={`flex flex-col md:w-1/2  tracking-[0.10rem]`}>
+        <div
+          className={`flex flex-col md:w-1/2  tracking-[0.10rem] md:px-10 px-6`}
+        >
           <div className={`w-full  ${stage == 4 ? "md:h-full" : null}`}>
-            <div className="px-10 pt-5 md:w-2/3">
+            <div className="pt-5 md:w-2/3">
               <div className="flex flex-row items-center py-2 font-medium">
                 <Image
                   src={transition}
@@ -589,37 +591,37 @@ export default function Chat() {
               </p>
             </div>
             {stage !== 4 ? (
-              <div className="py-5 px-10">
+              <div className="py-5">
                 <StepTracker stage={stage} />
               </div>
             ) : null}
 
             {stage == 1 ? (
-              <p className="font-semibold text-sm px-10">
+              <p className="font-semibold text-sm">
                 Please list down your current and previous jobs. You may also
                 paste your text CV.
               </p>
             ) : null}
             {stage == 2 ? (
-              <p className="font-semibold text-sm px-10">
+              <p className="font-semibold text-sm">
                 List down your hobbies and leisure activities that you wish to
                 translate to your potential career paths.
               </p>
             ) : null}
             {stage == 3 ? (
-              <p className="font-semibold text-sm px-10">
+              <p className="font-semibold text-sm">
                 Would you like the transitions to reflect any special
                 circumstances?
               </p>
             ) : null}
             {stage == 4 ? (
-              <p className="font-semibold text-sm px-10 py-5">
+              <p className="font-semibold text-sm py-5">
                 Here are your transitions.
               </p>
             ) : null}
           </div>
           {stage == 1 ? (
-            <div className="px-10 text-black flex flex-col mt-5">
+            <div className="text-black flex flex-col mt-2">
               <input
                 type="text"
                 className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
@@ -637,7 +639,7 @@ export default function Chat() {
             </div>
           ) : null}
           {stage == 2 ? (
-            <div className="px-10 text-black flex flex-col mt-5">
+            <div className="text-black flex flex-col mt-3">
               <textarea
                 type="text"
                 onChange={handleHobbiesChange}
@@ -648,7 +650,7 @@ export default function Chat() {
             </div>
           ) : null}
           {stage == 3 ? (
-            <div className="px-10 gap-2 text-xs text-white flex flex-row flex-wrap mt-5 mb-10">
+            <div className="gap-2 text-xs text-white flex flex-row flex-wrap mt-5 mb-3">
               <button
                 className={`px-2 py-1  w-fit tracking-[0.10rem] rounded-md ${
                   considerations.includes("Flexible Work Schedule")
@@ -713,13 +715,22 @@ export default function Chat() {
           ) : null}
 
           {stage == 4 ? null : (
-            <div className="w-full">
-              <button
-                onClick={handleNext}
-                className=" bg-[#474545] text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
-              >
-                Next
-              </button>
+            <div className="flex justify-center md:justify-start">
+              {loading == true ? (
+                <button
+                  disabled
+                  className="bg-[#474545] w-36 h-10 bg-opacity-50 rounded-lg my-5 text-white px-8"
+                >
+                  <CircularProgress color="inherit" size="1.5rem" />
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  className="tracking-[0.10rem] w-36 h-10 bg-[#474545] rounded-lg my-5 text-white"
+                >
+                  Next
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -728,35 +739,56 @@ export default function Chat() {
           className={`flex flex-col w-1/2 justify-center items-center
            tracking-[0.10rem] h-full ${stage == 4 ? null : "md:h-screen"} `}
         >
-          {loading ? <CircularProgress color="inherit" /> : null}
+          {/* {loading ? <CircularProgress color="inherit" /> : null} */}
         </div>
       </div>
       {stage == 4 ? (
         <div className=" w-full h-fit text-black tracking-[0.1rem]">
-          <div className="flex flex-col md:flex-row">
-            <div className="flex flex-col md:w-1/3 px-10">
+          <div className="flex flex-col md:flex-row md:px-10 px-6">
+            <div className="flex flex-col md:w-1/3 md:px-0 md:pr-2">
               <p className="font-semibold mb-5">Adjacent Job Titles</p>
-              {adjacentJobs.map((j) => (
-                <div className="flex flex-row items-center" key={j.id}>
-                  <p className=" pb-2 tracking-[0.10rem]">{j}</p>
+              {adjacentJobs.map((job, index) => (
+                <div
+                  key={index}
+                  className={` ${
+                    index % 2 === 0
+                      ? "bg-[#D9D9D9] bg-opacity-40"
+                      : "bg-[#D9D9D9]"
+                  } my-1 py-1.5 rounded-md`}
+                >
+                  <p className="mx-2 tracking-[0.10rem]">{job}</p>
                 </div>
               ))}
             </div>
-            <div className="flex flex-col md:w-1/3 md:px-5 px-10 md:mt-0 mt-10">
+            <div className="flex flex-col md:w-1/3 md:px-2 md:mt-0 mt-10">
               <p className="font-semibold mb-5">Emerging Job Titles</p>
-              {emergingJobs.map((j) => (
-                <div className="flex flex-row items-center" key={j.id}>
-                  <p className=" pb-2 tracking-[0.10rem]">{j}</p>
+              {emergingJobs.map((job, index) => (
+                <div
+                  key={index}
+                  className={` ${
+                    index % 2 === 0
+                      ? "bg-[#D9D9D9] bg-opacity-40"
+                      : "bg-[#D9D9D9]"
+                  } my-1 py-1.5 rounded-md`}
+                >
+                  <p className="mx-2 tracking-[0.10rem]">{job}</p>
                 </div>
               ))}
             </div>
-            <div className="flex flex-col md:w-1/3 dm:pr-10 px-10 md:mt-0 mt-10">
+            <div className="flex flex-col md:w-1/3 md:px-0 md:pl-2 md:mt-0 mt-10">
               <p className="font-semibold mb-5">
                 Gigwork/Internship Job Titles
               </p>
-              {gigJobs.map((j) => (
-                <div className="flex flex-row items-center" key={j.id}>
-                  <p className=" pb-2 tracking-[0.10rem]">{j}</p>
+              {gigJobs.map((job, index) => (
+                <div
+                  key={index}
+                  className={` ${
+                    index % 2 === 0
+                      ? "bg-[#D9D9D9] bg-opacity-40"
+                      : "bg-[#D9D9D9]"
+                  } my-1 py-1.5 rounded-md`}
+                >
+                  <p className="mx-2 tracking-[0.10rem]">{job}</p>
                 </div>
               ))}
             </div>
@@ -764,7 +796,7 @@ export default function Chat() {
         </div>
       ) : null}
       {stage == 4 ? (
-        <div className="w-full flex flex-col items-center px-10">
+        <div className="w-full flex flex-col items-center md:px-10 px-6">
           <div className="w-full flex flex-row my-[2rem] justify-center space-x-4">
             <button className=" bg-[#474545] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md">
               Save
@@ -776,31 +808,38 @@ export default function Chat() {
               Restart
             </button>
           </div>
-          <p className="text-[#555555] text-md mb-[2rem]  text-xl font-medium tracking-[0.10rem] ">
+          <p className="text-[#555555] text-md mb-2 mt-3 text-xl font-medium tracking-[0.10rem] ">
             Find out more about your Generated Job Titles using the Task Compare
             Tool <u>below</u>
           </p>
           <div className="flex flex-col md:flex-row mt-[1rem] w-full  tracking-[0.10rem] ">
-            <div className="md:w-1/2 flex flex-col pr-5">
+            <div className="md:w-1/2 flex flex-col md:pr-5">
               <p className="text-md text-[#555555] font-semibold">
                 Your Standardized Task Activites
               </p>
-              <p className=" text-black mb-8 mt-2">
+              <p className=" text-black my-2">
                 List of Standardized Task Activites translated based on your
                 inputs.
               </p>
 
               <div className="mb-[3rem]">
-                {part3IWA.map((j) => (
-                  <div className="flex flex-row items-center " key={j.id}>
-                    <p className=" pb-2 tracking-[0.10rem] text-black">{j}</p>
+                {part3IWA.map((iwa, index) => (
+                  <div
+                    key={index}
+                    className={` ${
+                      index % 2 === 0
+                        ? "bg-[#D9D9D9] bg-opacity-40"
+                        : "bg-[#D9D9D9]"
+                    } my-1 py-1.5 rounded-md`}
+                  >
+                    <p className="mx-2 tracking-[0.10rem]">{iwa}</p>
                   </div>
                 ))}
               </div>
             </div>
             <div className="md:w-1/2 flex flex-col md:pl-5">
               <p className="text-md text-[#555555] font-semibold">Input Job</p>
-              <p className=" text-black mt-[1rem] mb-[3rem] ">
+              <p className=" text-black my-2">
                 Please input a generated job title to compare the list of its
                 standardized task activities versus your set of standardized
                 task activities.
@@ -812,56 +851,64 @@ export default function Chat() {
                 onChange={handleGenJobChange}
                 placeholder="Job title here..."
               ></input>
-              <div className="flex flex-row my-[3rem] space-x-2">
-                <button
-                  onClick={handleCompareGenJob}
-                  className=" bg-[#474545] text-xs py-1 px-10 text-white w-fit tracking-[0.10rem] rounded-md md:mr-10"
-                >
-                  Compare
-                </button>
+              <div className="flex flex-row justify-center my-4 space-x-2">
+                {compareLoading == true ? (
+                  <button
+                    disabled
+                    className="bg-[#474545] w-36 h-10 bg-opacity-50 rounded-lg my-5 text-white px-8"
+                  >
+                    <CircularProgress color="inherit" size="1.5rem" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleCompareGenJob}
+                    className="tracking-[0.10rem] w-36 h-10 bg-[#474545] rounded-lg my-5 text-white"
+                  >
+                    Compare
+                  </button>
+                )}
                 <button
                   onClick={restartCompare}
-                  className=" bg-[#737171] text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md mr-10"
+                  className="tracking-[0.10rem] w-36 h-10 bg-[#474545] rounded-lg my-5 text-white"
                 >
                   Restart
                 </button>
-                <button
-                  //   onClick={handleNext}
-                  className=" text-xs py-2 px-10 text-white w-fit tracking-[0.10rem] rounded-md "
-                >
-                  Save
-                </button>
               </div>
-              {compareLoading ? (
-                <div className="flex w-full text-gray-400 fill-gray-300 items-center justify-center">
-                  <CircularProgress color="inherit" />
-                </div>
-              ) : null}
               <div className="w-full flex font-semibold  text-black flex-row mt-[2rem] justify-between  mb-[1rem]">
-                <p className=" ">Similar Tasks: {same} %</p>
+                <p className=" ">
+                  Similar Tasks: <br className="md:hidden" />
+                  {same} %
+                </p>
                 <div className="flex flex-row">
                   <p className="">Importance</p>
                   <KeyboardArrowDownIcon />
                 </div>
               </div>
               {sameList.map((j) => (
-                <div className="flex flex-row items-center " key={j.id}>
-                  <p className=" pb-2 tracking-[0.10rem] text-black">{j}</p>
+                <div
+                  className="my-1 w-full tracking-[0.10rem] text-black bg-[#ccf5ce] py-1.5 px-2 rounded-md"
+                  key={j.id}
+                >
+                  {j}
                 </div>
               ))}
               <div className="w-full flex font-semibold  text-black flex-row mt-[2rem] justify-between  mb-[1rem]">
-                <p className=" ">Tasks to Train: {diff} %</p>
+                <p className=" ">
+                  Tasks to Train: <br className="md:hidden" />
+                  {diff} %
+                </p>
                 <div className="flex flex-row">
                   <p className="">Importance</p>
                   <KeyboardArrowDownIcon />
                 </div>
               </div>
-              <div className="mb-[3rem]">
+              <div className="mb-[3rem] w-full">
                 {diffList.map((j) => (
-                  <div className="flex flex-row items-center " key={j.id}>
-                    <p className=" pb-2 tracking-[0.10rem] text-black bg-[#F5D3CC]">
-                      {j}
-                    </p>
+                  <div
+                    className="my-1 w-full tracking-[0.10rem] text-black bg-[#F5D3CC] py-1.5 px-2 rounded-md"
+                    key={j.id}
+                  >
+                    {j}
                   </div>
                 ))}
               </div>

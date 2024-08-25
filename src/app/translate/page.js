@@ -192,8 +192,8 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row w-full min-h-screen">
-      <div className="flex flex-col w-full md:w-1/2 h-full px-10 tracking-[0.10rem]">
+    <div className="flex flex-col md:flex-row w-full px-6 md:px-0">
+      <div className="flex flex-col w-full md:w-1/2 h-full px-0 md:px-10 tracking-[0.10rem]">
         <div className="w-full">
           <div className="pt-5 md:w-2/3">
             <div className="flex flex-row items-center py-2 font-medium">
@@ -217,8 +217,8 @@ export default function Chat() {
             <button
               className={` pr-2 tracking-[0.10rem] ${
                 inputType == "text"
-                  ? "text-md text-[#555555]"
-                  : "text-sm text-gray-400"
+                  ? "text-sm text-[#555555]"
+                  : "text-xs text-gray-400"
               }`}
               onClick={() => setInputType("text")}
             >
@@ -228,8 +228,8 @@ export default function Chat() {
             <button
               className={` px-2 tracking-[0.10rem] ${
                 inputType == "job"
-                  ? "text-md text-[#555555]"
-                  : "text-sm text-gray-400"
+                  ? "text-sm text-[#555555]"
+                  : "text-xs text-gray-400"
               }`}
               onClick={() => setInputType("job")}
             >
@@ -237,10 +237,10 @@ export default function Chat() {
             </button>
             |
             <button
-              className={` px-2 tracking-[0.10rem] ${
+              className={` pl-2 tracking-[0.10rem] ${
                 inputType == "hobby"
-                  ? "text-md text-[#555555]"
-                  : "text-sm text-gray-400"
+                  ? "text-sm text-[#555555]"
+                  : "text-xs text-gray-400"
               }`}
               onClick={() => setInputType("hobby")}
             >
@@ -301,28 +301,35 @@ export default function Chat() {
             ></textarea>
           </div>
         ) : null}
-        <div className="">
-          <button
-            onClick={handleGenerate}
-            className=" bg-[#474545] py-2 text-white tracking-[0.10rem] rounded-md mt-5 text-center px-6"
-          >
-            Generate
-          </button>
+        <div className="flex justify-center md:justify-start">
+          {loading == true ? (
+            <button
+              disabled
+              className="bg-[#474545] w-36 h-10 bg-opacity-50 rounded-lg my-5 text-white px-8"
+            >
+              <CircularProgress color="inherit" size="1.5rem" />
+            </button>
+          ) : (
+            <button
+              onClick={handleGenerate}
+              className="tracking-[0.10rem] w-36 h-10 bg-[#474545] rounded-lg my-5 text-white"
+            >
+              Generate
+            </button>
+          )}
         </div>
       </div>
 
-      <div className=" relative flex flex-col justify-center items-center w-full md:w-1/2 md:h-100">
+      <div className="relative flex flex-col justify-center items-center w-full md:w-1/2 md:m-2">
         {loading ? (
-          <div className="bg-[#D9D9D9] bg-opacity-70 flex items-center justify-center z-50 rounded-md h-3/4 md:w-[620px] w-11/12 absolute">
-            <CircularProgress color="inherit" />
-          </div>
+          <div className="bg-[#D9D9D9] bg-opacity-70 flex items-center justify-center z-50 rounded-md h-full w-full absolute"></div>
         ) : null}
 
         <div className="flex flex-col m-5" id="results">
           {IWAs.map((iwa, index) => (
             <div
               key={index}
-              className={`${
+              className={` ${
                 index % 2 === 0 ? "bg-[#D9D9D9] bg-opacity-40" : "bg-[#D9D9D9]"
               } my-1 py-1.5 rounded-md`}
             >

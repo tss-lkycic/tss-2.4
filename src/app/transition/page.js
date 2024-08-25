@@ -1,10 +1,6 @@
 "use client";
 
 import { useChat } from "ai/react";
-import logo from "/public/logo.svg";
-import OpenAI from "openai";
-import Link from "next/link";
-import new_logo from "/public/new_logo.svg";
 import transition from "/public/transition.svg";
 import Image from "next/image";
 // import { writeFile } from "fs/promises";
@@ -13,11 +9,37 @@ import { useEffect, useState, useRef } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CircularProgress from "@mui/material/CircularProgress";
 import html2canvas from "html2canvas";
-import { common } from "@mui/material/colors";
+import ErrorModal from "../components/ErrorModal";
+import StepTracker from "../components/StepTracker";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
-    useChat();
+    useChat({
+      onResponse: async (response) => {
+        try {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const responseText = await response.clone().text();
+          console.log(responseText, "responseText");
+          const sentences = responseText
+            .split(/\d+\.\s/)
+            .map((sentence) => sentence.replace(/\n/g, ""))
+            .filter((sentence) => sentence.trim() !== "");
+
+          console.log("Processed response:", sentences);
+          setResponse(sentences);
+        } catch (error) {
+          setError("An error occurred while processing the response.");
+          setLoading(false);
+        }
+      },
+      onError: (error) => {
+        const { error: errorMessage } = JSON.parse(error.message);
+        setError(`Error: ${errorMessage}`);
+        setLoading(false);
+      },
+    });
 
   const [job, setJob] = useState("");
   const [genjob, setGenJob] = useState("");
@@ -29,12 +51,9 @@ export default function Chat() {
   const [IWAs, setIWAs] = useState([]);
   const responseRef = useRef(null);
   const [loading, setLoading] = useState(false);
+  const [compareLoading, setCompareLoading] = useState(false);
   const [user, setUser] = useState(generateID());
-  const [part1, setPart1] = useState(true);
-  const [part2, setPart2] = useState(false);
-  const [part3, setPart3] = useState(false);
-  const [part4, setPart4] = useState(false);
-  const [final, setFinal] = useState(false);
+  const [stage, setStage] = useState(1);
   const [moreTasks, setMoreTasks] = useState("");
   const [newIWAs, setNewIWAs] = useState([]);
   const [part1IWA, setPart1IWA] = useState([]);
@@ -48,45 +67,27 @@ export default function Chat() {
   const [emergingJobs, setEmergingJobs] = useState([]);
   const [gigJobs, setGigJobs] = useState([]);
   const [same, setSame] = useState("-");
-  const [same_list, setSameList] = useState([]);
+  const [sameList, setSameList] = useState([]);
   const [diff, setDiff] = useState("-");
-  const [diff_list, setDiffList] = useState([]);
-
-  useEffect(() => {
-    const latestResponse = Object.values(messages).pop();
-
-    if (latestResponse) {
-      const role = latestResponse.role;
-      if (role !== "user") {
-        // const sentences = latestResponse.content.split(", ");
-        const sentences = latestResponse.content
-          .split(/\d+\.\s/)
-          .map((sentence) => sentence.replace(/\n/g, ""))
-          .filter((sentence) => sentence.trim() !== "");
-        setResponse(sentences);
-        // fetchData(sentences);
-      } else {
-        setResponse([]);
-      }
-    }
-  }, [messages]);
+  const [diffList, setDiffList] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     console.log("iwas", IWAs);
-    if (part1 === true) {
+    if (stage == 1) {
       setTimeout(() => {
         setPart1IWA(IWAs);
         console.log(part1IWA, "hello iwas from part 1");
       }, 200);
     }
-    if (part3 === true) {
+    if (stage == 2) {
       setTimeout(() => {
         const newiwa = IWAs;
         setNewIWAs(newiwa);
-        console.log(newiwa, "hello new iwas from part 3");
+        console.log(newiwa, "hello new iwas from part 2");
       }, 200);
     }
-    if (final === true && IWAs.length > 0) {
+    if (stage == 4 && IWAs.length > 0) {
       setTimeout(() => {
         console.log("genjobiwa", IWAs);
         getSimilar();
@@ -100,9 +101,8 @@ export default function Chat() {
       const uniqueIWAs = Array.from(combinedIWAs);
       setPart3IWA(uniqueIWAs);
 
-      setPart3(false);
+      setStage(3);
       setLoading(false);
-      setPart4(true);
       setTimeout(() => {
         setIWAs([]);
       }, 3000);
@@ -112,24 +112,23 @@ export default function Chat() {
   const dummy = ["job1", "job2", "job3"];
 
   useEffect(() => {
-    if (adjacentJobs.length > 0 && part4 === true) {
+    if (adjacentJobs.length > 0 && stage === 3) {
       console.log("hello 1");
       generateEmergingJobs();
     }
   }, [getAdjacent]);
   useEffect(() => {
-    if (getEmerging === false && part4 === true) {
+    if (getEmerging === false && stage === 3) {
       console.log("hello 2");
       generateGigJobs();
     }
   }, [getEmerging]);
 
   useEffect(() => {
-    if (getGig === false && part4 === true) {
+    if (getGig === false && stage === 3) {
       console.log("hello 3");
-      setPart4(false);
+      setStage(4);
       setLoading(false);
-      setFinal(true);
     }
   }, [getGig]);
   useEffect(() => {
@@ -159,7 +158,7 @@ export default function Chat() {
         } else if (getGig === true) {
           setGigJobs(response);
           setGetGig(false);
-        } else if (part4 === false) {
+        } else if (stage !== 3) {
           invokeTask(response);
           setTimeout(() => {
             getIWAs(response);
@@ -185,13 +184,11 @@ export default function Chat() {
     return id;
   }
   function handleNext() {
-    if (part1 === true) {
+    if (stage == 1) {
       handleNext1();
-    } else if (part2 === true) {
-      //   handleNext2();
-    } else if (part3 === true) {
+    } else if (stage == 2) {
       handleNext3();
-    } else if (part4 === true) {
+    } else if (stage == 3) {
       handleNext4();
     }
   }
@@ -238,64 +235,15 @@ export default function Chat() {
     setLoading(true);
     setGetAdjacent(true);
     generateAdjacentJobs();
-    // setFinal(true);
   }
 
   function handleSavePart1IWAs() {
-    setPart1(false);
+    setStage(2);
     setLoading(false);
-    setPart3(true);
     setTimeout(() => {
       setIWAs([]);
     }, 3000);
   }
-
-  //   function handleAddPart2IWAs() {
-  //     // setNewIWAs(IWAs)
-  //     // setNewIWAs([...newIWAs, ...IWAs]);
-  //     setTimeout(() => {
-  //       setIWAs([]);
-  //     }, 3000);
-  //   }
-
-  //   function handleAddPart3IWAs() {
-  //     // setNewIWAs(IWAs)
-  //     // setNewIWAs([...newIWAs, ...IWAs]);
-
-  //     console.log(part1IWA, "og iwa");
-  //     console.log(IWAs, "new iwa");
-  //     console.log(newIWAs, "newiwa");
-  //     const combinedIWAs = new Set([...part1IWA, ...newIWAs]);
-  //     const uniqueIWAs = Array.from(combinedIWAs);
-  //     setPart3IWA(uniqueIWAs);
-
-  //     setPart3(false);
-  //     setPart4(true);
-  //     setTimeout(() => {
-  //       setIWAs([]);
-  //     }, 3000);
-  //   }
-  //   function handleGetFinalIWAs() {
-  //     // const jobbiwa = IWAs;
-  //     // console.log("new job iwas1", IWAs);
-  //     // console.log("new job iwas2", jobbiwa);
-  //     // setGenJobIWA(jobbiwa);
-  //     setTimeout(() => {
-  //       //   getSimilar(jobbiwa);
-  //       getSimilar();
-  //     }, 3000);
-  //   }
-
-  const hiddenFileInput = useRef(null);
-
-  const handleUpload = (event) => {
-    hiddenFileInput.current.click();
-  };
-
-  //   const [fileContents, setFileContents] = useState("");
-  //   const [assistantThreadId, setAssistantThreadId] = useState("");
-  //   const [conversation, setConversation] = useState([]);
-  //   const [pdfDataUrl, setPdfDataUrl] = useState(null);
 
   async function handleChange(event) {
     const fileUploaded = event.target.files[0];
@@ -416,6 +364,7 @@ export default function Chat() {
 
         noOfTasksInQueue = data.no_of_tasks_in_queue; // Update the variable
 
+        console.log(noOfTasksInQueue, "how many more tasks");
         if (noOfTasksInQueue > 0) {
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
@@ -429,7 +378,7 @@ export default function Chat() {
           setIWAs(iwa_arr);
 
           console.log("No tasks in queue. Exiting loop.");
-          if (part1 === true) {
+          if (stage === 1) {
             // const tasks = IWAs;
             setTimeout(() => {
               handleSavePart1IWAs();
@@ -499,12 +448,13 @@ export default function Chat() {
 
       setSameList(same_arr);
       setDiffList(diff_arr);
-      // console.log("checking:", data["Feature Importance"]);
+      console.log(sameList, "same lust");
+      console.log(diffList, "diff lust");
 
       // Optional: Add a delay between API calls to avoid flooding the server
       // await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
       //   }
-      setLoading(false);
+      setCompareLoading(false);
     } catch (error) {
       console.error("Error:", error);
     }
@@ -590,7 +540,7 @@ export default function Chat() {
   }
 
   function handleCompareGenJob() {
-    setLoading(true);
+    setCompareLoading(true);
     getTasksFromGenJob();
   }
 
@@ -607,16 +557,16 @@ export default function Chat() {
 
   return (
     <div
-      className="w-screen min-h-screen flex flex-col overflow-scroll"
+      className="w-screen min-h-screen flex flex-col overflow-hidden	"
       id="results"
     >
       <div
         className={`flex flex-col md:flex-row w-full ${
-          final ? "h-2/5" : "h-full"
+          stage == 4 ? "h-2/5" : "h-full"
         } text-[#555555] `}
       >
         <div className={`flex flex-col md:w-1/2  tracking-[0.10rem]`}>
-          <div className={`w-full  ${final ? "md:h-full" : null}`}>
+          <div className={`w-full  ${stage == 4 ? "md:h-full" : null}`}>
             <div className="px-10 pt-5 md:w-2/3">
               <div className="flex flex-row items-center py-2 font-medium">
                 <Image
@@ -638,51 +588,37 @@ export default function Chat() {
                 transition.
               </p>
             </div>
-            {part1 ? (
-              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
-                <p>1. </p>
-                <p className=" ">
-                  Please list down your current and previous jobs. You may also
-                  paste your text CV.
-                </p>
+            {stage !== 4 ? (
+              <div className="py-5 px-10">
+                <StepTracker stage={stage} />
               </div>
             ) : null}
-            {/* {part2 ? (
-              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
-                <p>2. </p>
-                <p className=" ">
-                  The list of standardized task activities are generated based
-                  on your input. You may add to the list of standardize task
-                  activities below. Once you are satisfied, click 'Next' to
-                  proceed to the next step.
-                </p>
-              </div>
-            ) : null} */}
-            {part3 ? (
-              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
-                <p>2. </p>
-                <p className=" ">
-                  List down your hobbies and leisure activities that you wish to
-                  translate to your potential career paths.
-                </p>
-              </div>
+
+            {stage == 1 ? (
+              <p className="font-semibold text-sm px-10">
+                Please list down your current and previous jobs. You may also
+                paste your text CV.
+              </p>
             ) : null}
-            {part4 ? (
-              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
-                <p>3. </p>
-                <p className=" ">
-                  Would you like the transitions to reflect any special
-                  circumstances?
-                </p>
-              </div>
+            {stage == 2 ? (
+              <p className="font-semibold text-sm px-10">
+                List down your hobbies and leisure activities that you wish to
+                translate to your potential career paths.
+              </p>
             ) : null}
-            {final ? (
-              <div className="flex flex-row px-10 text-sm py-5 font-semibold">
-                <p className=" ">Here are your transitions.</p>
-              </div>
+            {stage == 3 ? (
+              <p className="font-semibold text-sm px-10">
+                Would you like the transitions to reflect any special
+                circumstances?
+              </p>
+            ) : null}
+            {stage == 4 ? (
+              <p className="font-semibold text-sm px-10 py-5">
+                Here are your transitions.
+              </p>
             ) : null}
           </div>
-          {part1 ? (
+          {stage == 1 ? (
             <div className="px-10 text-black flex flex-col mt-5">
               <input
                 type="text"
@@ -700,18 +636,7 @@ export default function Chat() {
               ></textarea>
             </div>
           ) : null}
-          {/* {part2 ? (
-            <div className="px-10 text-black flex flex-col mt-5">
-              <textarea
-                type="text"
-                onChange={handleTaskChange}
-                value={moreTasks}
-                placeholder="e.g. Create posters and infographics, organise and plan events..."
-                className="p-2 my-2  w-full h-[10rem] bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem]"
-              ></textarea>
-            </div>
-          ) : null} */}
-          {part3 ? (
+          {stage == 2 ? (
             <div className="px-10 text-black flex flex-col mt-5">
               <textarea
                 type="text"
@@ -722,7 +647,7 @@ export default function Chat() {
               ></textarea>
             </div>
           ) : null}
-          {part4 ? (
+          {stage == 3 ? (
             <div className="px-10 gap-2 text-xs text-white flex flex-row flex-wrap mt-5 mb-10">
               <button
                 className={`px-2 py-1  w-fit tracking-[0.10rem] rounded-md ${
@@ -787,7 +712,7 @@ export default function Chat() {
             </div>
           ) : null}
 
-          {final ? null : (
+          {stage == 4 ? null : (
             <div className="w-full">
               <button
                 onClick={handleNext}
@@ -801,23 +726,23 @@ export default function Chat() {
 
         <div
           className={`flex flex-col w-1/2 justify-center items-center
-           tracking-[0.10rem] h-full ${final ? null : "md:h-screen"} `}
+           tracking-[0.10rem] h-full ${stage == 4 ? null : "md:h-screen"} `}
         >
           {loading ? <CircularProgress color="inherit" /> : null}
         </div>
       </div>
-      {final ? (
+      {stage == 4 ? (
         <div className=" w-full h-fit text-black tracking-[0.1rem]">
-          <div className="flex flex-row">
-            <div className="flex flex-col w-1/3 pl-10">
-              <p className="font-semibold mb-5">Adjacent Job Titles</p>{" "}
+          <div className="flex flex-col md:flex-row">
+            <div className="flex flex-col md:w-1/3 px-10">
+              <p className="font-semibold mb-5">Adjacent Job Titles</p>
               {adjacentJobs.map((j) => (
                 <div className="flex flex-row items-center" key={j.id}>
                   <p className=" pb-2 tracking-[0.10rem]">{j}</p>
                 </div>
               ))}
             </div>
-            <div className="flex flex-col w-1/3 px-5">
+            <div className="flex flex-col md:w-1/3 md:px-5 px-10 md:mt-0 mt-10">
               <p className="font-semibold mb-5">Emerging Job Titles</p>
               {emergingJobs.map((j) => (
                 <div className="flex flex-row items-center" key={j.id}>
@@ -825,7 +750,7 @@ export default function Chat() {
                 </div>
               ))}
             </div>
-            <div className="flex flex-col w-1/3 pr-10">
+            <div className="flex flex-col md:w-1/3 dm:pr-10 px-10 md:mt-0 mt-10">
               <p className="font-semibold mb-5">
                 Gigwork/Internship Job Titles
               </p>
@@ -838,15 +763,15 @@ export default function Chat() {
           </div>
         </div>
       ) : null}
-      {final ? (
+      {stage == 4 ? (
         <div className="w-full flex flex-col items-center px-10">
-          <div className="w-full flex flex-row my-[2rem] justify-center">
-            <button className=" bg-[#474545] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10">
+          <div className="w-full flex flex-row my-[2rem] justify-center space-x-4">
+            <button className=" bg-[#474545] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md">
               Save
             </button>
             <button
               onClick={restartPage}
-              className=" bg-[#737171] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md ml-10"
+              className=" bg-[#737171] text-xs py-2 px-8 text-white w-fit tracking-[0.10rem] rounded-md"
             >
               Restart
             </button>
@@ -855,12 +780,12 @@ export default function Chat() {
             Find out more about your Generated Job Titles using the Task Compare
             Tool <u>below</u>
           </p>
-          <div className="flex flex-row mt-[1rem] w-full  tracking-[0.10rem] ">
-            <div className="w-1/2 flex flex-col pr-5">
+          <div className="flex flex-col md:flex-row mt-[1rem] w-full  tracking-[0.10rem] ">
+            <div className="md:w-1/2 flex flex-col pr-5">
               <p className="text-md text-[#555555] font-semibold">
                 Your Standardized Task Activites
               </p>
-              <p className=" text-black mt-[1rem] mb-[5rem]">
+              <p className=" text-black mb-8 mt-2">
                 List of Standardized Task Activites translated based on your
                 inputs.
               </p>
@@ -873,7 +798,7 @@ export default function Chat() {
                 ))}
               </div>
             </div>
-            <div className="w-1/2 flex flex-col pl-5">
+            <div className="md:w-1/2 flex flex-col md:pl-5">
               <p className="text-md text-[#555555] font-semibold">Input Job</p>
               <p className=" text-black mt-[1rem] mb-[3rem] ">
                 Please input a generated job title to compare the list of its
@@ -887,10 +812,10 @@ export default function Chat() {
                 onChange={handleGenJobChange}
                 placeholder="Job title here..."
               ></input>
-              <div className="flex flex-row  my-[3rem]">
+              <div className="flex flex-row my-[3rem] space-x-2">
                 <button
                   onClick={handleCompareGenJob}
-                  className=" bg-[#474545] text-xs py-1 px-10 text-white w-fit tracking-[0.10rem] rounded-md mr-10"
+                  className=" bg-[#474545] text-xs py-1 px-10 text-white w-fit tracking-[0.10rem] rounded-md md:mr-10"
                 >
                   Compare
                 </button>
@@ -907,7 +832,7 @@ export default function Chat() {
                   Save
                 </button>
               </div>
-              {loading ? (
+              {compareLoading ? (
                 <div className="flex w-full text-gray-400 fill-gray-300 items-center justify-center">
                   <CircularProgress color="inherit" />
                 </div>
@@ -919,7 +844,7 @@ export default function Chat() {
                   <KeyboardArrowDownIcon />
                 </div>
               </div>
-              {same_list.map((j) => (
+              {sameList.map((j) => (
                 <div className="flex flex-row items-center " key={j.id}>
                   <p className=" pb-2 tracking-[0.10rem] text-black">{j}</p>
                 </div>
@@ -932,7 +857,7 @@ export default function Chat() {
                 </div>
               </div>
               <div className="mb-[3rem]">
-                {diff_list.map((j) => (
+                {diffList.map((j) => (
                   <div className="flex flex-row items-center " key={j.id}>
                     <p className=" pb-2 tracking-[0.10rem] text-black bg-[#F5D3CC]">
                       {j}
@@ -944,7 +869,8 @@ export default function Chat() {
           </div>
         </div>
       ) : null}
-      {part1 ? <div></div> : null}
+      {stage == 1 ? <div></div> : null}
+      {error && <ErrorModal message={error} onClose={() => setError(null)} />}
     </div>
   );
 }

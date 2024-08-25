@@ -21,6 +21,7 @@ export default function RootLayout({ children }) {
         <TopBar />
         <div className="bg-[#F6F6F6] text-[#555555] min-h-screen">
           <AuthProvider>
+        <div className="bg-[#F6F6F6] text-[#555555] min-h-screen">
           {children}
           </AuthProvider>
         </div>

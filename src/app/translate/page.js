@@ -1,83 +1,60 @@
 "use client";
 
 import { useChat } from "ai/react";
+import logo from "/public/logo.svg";
+import new_logo from "/public/new_logo.svg";
 import translate from "/public/translate.svg";
 import Image from "next/image";
-import { useEffect, useState, useRef } from "react";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
-import OpenAI from "openai";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import CircularProgress from "@mui/material/CircularProgress";
-import DownloadIcon from "@mui/icons-material/Download";
 import html2canvas from "html2canvas";
+import ErrorModal from "../components/ErrorModal";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
-    useChat();
+    useChat({
+      onResponse: async (response) => {
+        try {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const responseText = await response.clone().text();
+          console.log(responseText, "responseText");
+          const sentences = responseText
+            .split(/\d+\.\s/)
+            .map((sentence) => sentence.replace(/\n/g, ""))
+            .filter((sentence) => sentence.trim() !== "");
 
-  const [inputtype, setInputType] = useState("Text");
-  const [queryURL, setQueryURl] = useState(false);
-  const [queryText, setQueryText] = useState(true);
-  const [queryPDF, setQueryPDF] = useState(false);
-  const [queryJob, setQueryJob] = useState(false);
-  const [queryHobbies, setQueryHobbies] = useState(false);
+          console.log("Processed response:", sentences);
+          invokeTask(sentences);
+          setTimeout(() => {
+            getIWAs(sentences);
+          }, 3000);
+        } catch (error) {
+          setError("An error occurred while processing the response.");
+          setLoading(false);
+        }
+      },
+      onError: (error) => {
+        try {
+          const { error: errorMessage } = JSON.parse(error.message);
+          setError(`Error: ${errorMessage}`);
+        } catch (parseError) {
+          setError(`Error: ${error.message}`);
+        }
+        setLoading(false);
+      },
+    });
+  // can be text, job, hobby
+  const [inputType, setInputType] = useState("text");
   const [job, setJob] = useState("");
   const [hobbies, setHobbies] = useState("");
   const [text, setText] = useState("");
-  const [url, setURL] = useState("");
-  const [response, setResponse] = useState([]);
   const [IWAs, setIWAs] = useState([]);
-  const responseRef = useRef(null);
   const [user, setUser] = useState(generateID());
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const latestResponse = Object.values(messages).pop();
-
-    if (latestResponse) {
-      const role = latestResponse.role;
-      if (role !== "user") {
-        // const sentences = latestResponse.content.split(", ");
-        const sentences = latestResponse.content
-          .split(/\d+\.\s/)
-          .map((sentence) => sentence.replace(/\n/g, ""))
-          .filter((sentence) => sentence.trim() !== "");
-        setResponse(sentences);
-        console.log("Latest response from OpenAI:" + sentences)
-        // fetchData(sentences);
-      } else {
-        setResponse([]);
-      }
-    }
-  }, [messages]);
-
-  useEffect(() => {
-    console.log("useeffect log of IWA", IWAs);
-  }, [IWAs]);
-
-  useEffect(() => {
-    // Store the current response in a ref
-    responseRef.current = response;
-
-    // Set a timeout to trigger fetchData after a short delay
-    const timeout = setTimeout(() => {
-      // Check if both response and responseRef are not empty lists and the response is stable (i.e., not changed during the delay)
-      if (
-        responseRef.current !== null &&
-        responseRef.current.length > 0 &&
-        responseRef.current === response
-      ) {
-        // If response is stable and not empty, call fetchData
-        console.log("This is the latest response:", response);
-        invokeTask(response);
-        setTimeout(() => {
-          getIWAs(response);
-        }, 3000);
-      }
-    }, 1500); // Adjust the delay time as needed
-
-    // Cleanup the timeout if response changes before the delay ends
-    return () => clearTimeout(timeout);
-  }, [response]);
+  const [error, setError] = useState(null);
 
   function generateID() {
     let id = "";
@@ -92,65 +69,20 @@ export default function Chat() {
     return id;
   }
 
-  function handleSelectItem(value) {
-    setInputType(value);
-    if (value === "URL") {
-      setQueryURl(true);
-      setQueryText(false);
-      setQueryPDF(false);
-      setQueryJob(false);
-      setQueryHobbies(false);
-    } else if (value === "Text") {
-      setQueryURl(false);
-      setQueryText(true);
-      setQueryPDF(false);
-      setQueryJob(false);
-      setQueryHobbies(false);
-    } else if (value === "PDF") {
-      setQueryURl(false);
-      setQueryText(false);
-      setQueryPDF(true);
-      setQueryJob(false);
-      setQueryHobbies(false);
-    } else if (value === "Job") {
-      setQueryURl(false);
-      setQueryText(false);
-      setQueryPDF(false);
-      setQueryJob(true);
-      setQueryHobbies(false);
-    } else if (value === "Hobbies") {
-      setQueryURl(false);
-      setQueryText(false);
-      setQueryPDF(false);
-      setQueryJob(false);
-      setQueryHobbies(true);
-    }
-    setIWAs([]);
-    setUser(generateID());
-  }
-
-  const hiddenFileInput = useRef(null);
-
-  const handleUpload = (event) => {
-    hiddenFileInput.current.click();
-  };
-
-  const handleChange = (event) => {
-    const fileUploaded = event.target.files[0];
-    handleFile(fileUploaded);
-  };
-
   function handleGenerate() {
     setLoading(true);
-    if (inputtype === "Text") {
-      getTasksFromText();
-    } else if (inputtype === "URL") {
-    } else if (inputtype === "File") {
-    } else if (inputtype === "Job") {
-      getTasksFromJob();
-    } else if (inputtype === "Hobbies") {
-      getTasksFromHobbies();
+    let userMessage;
+    if (inputType === "text") {
+      userMessage = `${text} Extract and summarize the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
+    } else if (inputType === "job") {
+      userMessage = `Create a list of tasks for the job: ${job}, even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
+    } else if (inputType === "hobby") {
+      userMessage = `For each hobby or daily activity in this list: ${hobbies}, convert them into task sentences, each shorter than 10 words and return them such that each task is numbered.`;
     }
+    append({
+      role: "user",
+      content: userMessage,
+    });
   }
 
   function handleJobChange(e) {
@@ -167,29 +99,10 @@ export default function Chat() {
     const hobbiesContent = e.target.value;
     setHobbies(hobbiesContent);
   }
-  function handleURLChange(e) {
-    const urlLink = e.target.value;
-    setURL(urlLink);
-  }
-
-  function handleFileChange(e) {
-    console.log(e.target);
-  }
-
-  function restartPage() {
-    setIWAs([]);
-    setHobbies("");
-    setText("");
-    setURL("");
-    setJob("");
-    generateID();
-    location.reload();
-  }
 
   async function invokeTask(tasklist) {
     try {
       // Data to send in the request body
-
       const requestData = {
         user_id: user,
         task: tasklist,
@@ -280,48 +193,11 @@ export default function Chat() {
     }
   };
 
-  function getTasksFromFile() {}
-  function getTasksFromURL() {}
-
-  function getTasksFromText() {
-    const userText = text;
-    append({
-      role: "user",
-      content:
-        userText +
-        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words. ",
-    });
-  }
-  function getTasksFromHobbies() {
-    const userHobbies = hobbies;
-    append({
-      role: "user",
-      content:
-        // userHobbies +
-        "For each hobby or daily activity in this list:" +
-        userHobbies +
-        ",convert them into tasks sentence, each shorter than 10 words and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
-    });
-  }
-
-  function getTasksFromJob() {
-    const userJob = job;
-    append({
-      role: "user",
-      content:
-        "Create a list of tasks for the job," +
-        userJob +
-        "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
-    });
-  }
-
   return (
-    <div className="flex flex-col md:flex-row w-full md:h-full ">
-      <div className="flex flex-col w-full md:w-1/2 h-full  tracking-[0.10rem]">
+    <div className="flex flex-col md:flex-row w-full min-h-screen">
+      <div className="flex flex-col w-full md:w-1/2 h-full px-10 tracking-[0.10rem]">
         <div className="w-full">
-          <div className="px-10 pt-5 md:w-2/3">
+          <div className="pt-5 md:w-2/3">
             <div className="flex flex-row items-center py-2 font-medium">
               <Image
                 src={translate}
@@ -339,91 +215,63 @@ export default function Chat() {
               contributions.
             </p>
           </div>
-          <div className="px-10 pt-5 pb-5 justify-between">
+          <div className="pt-5 pb-5 justify-between">
             <button
               className={` pr-2 tracking-[0.10rem] ${
-                queryText ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                inputType == "text"
+                  ? "text-md text-[#555555]"
+                  : "text-sm text-gray-400"
               }`}
-              onClick={() => handleSelectItem("Text")}
+              onClick={() => setInputType("text")}
             >
               Paste Text
             </button>
             |
             <button
               className={` px-2 tracking-[0.10rem] ${
-                queryURL ? "text-md text-[#555555]" : "text-sm text-gray-400"
+                inputType == "job"
+                  ? "text-md text-[#555555]"
+                  : "text-sm text-gray-400"
               }`}
-              onClick={() => handleSelectItem("URL")}
-            >
-              Link URL
-            </button>
-            |
-            <button
-              className={` px-2 tracking-[0.10rem] ${
-                queryPDF ? "text-md text-[#555555]" : "text-sm text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("PDF")}
-            >
-              Upload CV
-            </button>
-            |
-            <button
-              className={` px-2 tracking-[0.10rem] ${
-                queryJob ? "text-md text-[#555555]" : "text-sm text-gray-400"
-              }`}
-              onClick={() => handleSelectItem("Job")}
+              onClick={() => setInputType("job")}
             >
               Input Job
             </button>
             |
             <button
               className={` px-2 tracking-[0.10rem] ${
-                queryHobbies
+                inputType == "hobby"
                   ? "text-md text-[#555555]"
                   : "text-sm text-gray-400"
               }`}
-              onClick={() => handleSelectItem("Hobbies")}
+              onClick={() => setInputType("hobby")}
             >
               Input Hobbies
             </button>
           </div>
-          {queryText ? (
-            <p className="px-10 text-xs mb-5">
+          {inputType == "text" ? (
+            <p className="text-xs mb-5">
               Please submit the text you wish to convert into standardized task
               activities. This can be a job description, course description, or
               your resume content.
             </p>
           ) : null}
-          {queryURL ? (
-            <p className="px-10 text-xs  mb-5">
-              Please submit the URL with content that can be translated into
-              standardized task activities. This can be a link to a job
-              description, course description, or your resume.
-            </p>
-          ) : null}
-          {queryPDF ? (
-            <p className="px-10 text-xs  mb-5">
-              Please upload the file that has content that can be translated
-              into standardized task activities. This can be a job description,
-              course description, or your resume.
-            </p>
-          ) : null}
-          {queryJob ? (
-            <p className="px-10 text-xs  mb-5">
+          {inputType == "job" ? (
+            <p className="text-xs  mb-5">
               Please input a job title to generate a list of its standardized
               task activities.
             </p>
           ) : null}
-          {queryHobbies ? (
-            <p className="px-10 text-xs  mb-5">
+          {inputType == "hobby" ? (
+            <p className="text-xs  mb-5">
               Please input a list of hobbies and/or daily activities to generate
               a list of its standardized task activities.
             </p>
           ) : null}
         </div>
 
-        {queryText ? (
-          <div className="px-10 text-black w-full flex flex-col">
+        {inputType == "text" ? (
+          <div className="text-black w-full flex flex-col">
             <textarea
               type="text"
               value={text}
@@ -433,37 +281,8 @@ export default function Chat() {
             ></textarea>
           </div>
         ) : null}
-        {queryURL ? (
-          <div className="px-10 text-black flex flex-col">
-            <input
-              value={url}
-              type="text"
-              className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
-              placeholder="Enter a URL here..."
-              onChange={handleURLChange}
-            ></input>
-          </div>
-        ) : null}
-        {queryPDF ? (
-          <div className="px-10 text-black  flex flex-col">
-            <button
-              onClick={handleUpload}
-              className="bg-[#D9D9D9] text-[#555555] rounded-md tracking-[0.10rem] w-full h-[15rem] p-2 flex flex-col justify-center items-center"
-            >
-              Select File Here
-            </button>
-            <input
-              type="file"
-              id="file"
-              className="hidden"
-              onChange={handleChange}
-              // onChange={handleFileChange}
-              ref={hiddenFileInput}
-            ></input>
-          </div>
-        ) : null}
-        {queryJob ? (
-          <div className="px-10 text-black flex flex-col">
+        {inputType == "job" ? (
+          <div className="text-black flex flex-col">
             <input
               type="text"
               className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
@@ -473,8 +292,8 @@ export default function Chat() {
             ></input>
           </div>
         ) : null}
-        {queryHobbies ? (
-          <div className="px-10 text-black flex flex-col">
+        {inputType == "hobby" ? (
+          <div className="text-black flex flex-col">
             <textarea
               type="text"
               className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
@@ -484,46 +303,37 @@ export default function Chat() {
             ></textarea>
           </div>
         ) : null}
-        <div className="px-10 flex justify-between">
+        <div className="">
           <button
             onClick={handleGenerate}
-            className=" bg-[#474545] py-2 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5 text-center"
+            className=" bg-[#474545] py-2 text-white tracking-[0.10rem] rounded-md mt-5 text-center px-6"
           >
             Generate
-          </button>
-          <button
-            onClick={restartPage}
-            className=" bg-[#737171] py-2 px-5 text-white w-1/4 tracking-[0.10rem] rounded-md mt-5 text-center"
-          >
-            <RestartAltIcon className="mr-3 text-[1.5rem]"></RestartAltIcon>
-            Reset
-          </button>
-          <button
-            onClick={downloadImage}
-            className=" bg-[#737171] py-2 px-5 w-1/4 text-white tracking-[0.10rem] rounded-md mt-5 text-center"
-          >
-            <DownloadIcon className="mr-3 text-[1.5rem]" />
-            Save
           </button>
         </div>
       </div>
 
-      <div className="flex flex-col w-full md:w-1/2 md:h-full m-5">
-        <div className="w-full md:h-2/5 "></div>
+      <div className=" relative flex flex-col justify-center items-center w-full md:w-1/2 md:h-100">
         {loading ? (
-          <div className="w-full  flex">
+          <div className="bg-[#D9D9D9] bg-opacity-70 flex items-center justify-center z-50 rounded-md h-3/4 md:w-[620px] w-11/12 absolute">
             <CircularProgress color="inherit" />
           </div>
         ) : null}
 
-        <div className="w-full h-3/5 pb-10 " id="results">
+        <div className="flex flex-col m-5" id="results">
           {IWAs.map((iwa, index) => (
-            <div className="flex flex-row items-center" key={index}>
-              <p className=" ml-2 pb-2 tracking-[0.10rem]">{iwa}</p>
+            <div
+              key={index}
+              className={`${
+                index % 2 === 0 ? "bg-[#D9D9D9] bg-opacity-40" : "bg-[#D9D9D9]"
+              } my-1 py-1.5 rounded-md`}
+            >
+              <p className="ml-2 tracking-[0.10rem]">{iwa}</p>
             </div>
           ))}
         </div>
       </div>
+      {error && <ErrorModal message={error} onClose={() => setError(null)} />}
     </div>
   );
 }

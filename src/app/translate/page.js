@@ -1,14 +1,11 @@
 "use client";
 
 import { useChat } from "ai/react";
-import logo from "/public/logo.svg";
-import new_logo from "/public/new_logo.svg";
 import translate from "/public/translate.svg";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import OpenAI from "openai";
-import Link from "next/link";
 import CircularProgress from "@mui/material/CircularProgress";
 import DownloadIcon from "@mui/icons-material/Download";
 import html2canvas from "html2canvas";

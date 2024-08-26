@@ -26,6 +26,15 @@ export default function TopBar() {
     setIsMenuOpen((prev) => !prev);
   };
 
+  const isMobileDevice = () => {
+    return (
+      typeof window !== "undefined" &&
+      /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        window.navigator.userAgent
+      )
+    );
+  };
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -38,10 +47,14 @@ export default function TopBar() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    if (!isMobileDevice()) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      if (!isMobileDevice()) {
+        document.removeEventListener("mousedown", handleClickOutside);
+      }
     };
   }, [menuRef, buttonRef]);
 

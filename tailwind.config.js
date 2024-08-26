@@ -14,14 +14,12 @@ module.exports = {
       },
       keyframes: {
         slideDown: {
-          "0%": { opacity: 0, transform: "translateY(-20px)", display: "none" },
-          "1%": { display: "block" },
+          "0%": { opacity: 0, transform: "translateY(-20px)" },
           "100%": { opacity: 1, transform: "translateY(0)" },
         },
         slideUp: {
           "0%": { opacity: 1, transform: "translateY(0)" },
-          "99%": { opacity: 0, transform: "translateY(-20px)" },
-          "100%": { display: "none" },
+          "100%": { opacity: 0, transform: "translateY(-20px)" },
         },
       },
       animation: {

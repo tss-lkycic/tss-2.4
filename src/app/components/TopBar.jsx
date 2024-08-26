@@ -26,6 +26,25 @@ export default function TopBar() {
     setIsMenuOpen((prev) => !prev);
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef, buttonRef]);
+
   return (
     <div className="bg-[#474545] h-[3.5rem] w-full flex flex-row justify-between">
       <div className="flex items-center">
@@ -39,7 +58,7 @@ export default function TopBar() {
         <div
           ref={menuRef}
           className={`absolute top-14 z-10 w-[270px] bg-[#474545] border-t border-white text-white transition-all duration-300 ease-in-out ${
-            isMenuOpen ? "animate-slideDown" : "animate-slideUp"
+            isMenuOpen ? "animate-slideDown" : "hidden animate-slideUp"
           }`}
         >
           <ul>

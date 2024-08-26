@@ -26,38 +26,6 @@ export default function TopBar() {
     setIsMenuOpen((prev) => !prev);
   };
 
-  const isMobileDevice = () => {
-    return (
-      typeof window !== "undefined" &&
-      /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        window.navigator.userAgent
-      )
-    );
-  };
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target)
-      ) {
-        setIsMenuOpen(false);
-      }
-    };
-
-    if (!isMobileDevice()) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      if (!isMobileDevice()) {
-        document.removeEventListener("mousedown", handleClickOutside);
-      }
-    };
-  }, [menuRef, buttonRef]);
-
   return (
     <div className="bg-[#474545] h-[3.5rem] w-full flex flex-row justify-between">
       <div className="flex items-center">

@@ -11,6 +11,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import html2canvas from "html2canvas";
 import ErrorModal from "../components/ErrorModal";
 import StepTracker from "../components/StepTracker";
+import { transitionPrompts } from "@/constants/prompts";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
@@ -187,9 +188,9 @@ export default function Chat() {
     if (stage == 1) {
       handleNext1();
     } else if (stage == 2) {
-      handleNext3();
+      handleNext2();
     } else if (stage == 3) {
-      handleNext4();
+      handleNext3();
     }
   }
 
@@ -202,12 +203,7 @@ export default function Chat() {
     const userJobs = job;
     append({
       role: "user",
-      content:
-        "These are the the jobs I have done before: " +
-        userJobs +
-        "And this is my resume:" +
-        userText +
-        "Please extract and summarise tasks from my past jobs and resume into a set of sentences return them such that they are numbered. ",
+      content: transitionPrompts.stepOnePrompt(userJobs, userText),
     });
   }
 
@@ -219,19 +215,15 @@ export default function Chat() {
     setDiffList([]);
   }
 
-  function handleNext3() {
+  function handleNext2() {
     setLoading(true);
     const userHobby = hobbies;
     append({
       role: "user",
-      content:
-        // userHobbies +
-        "For each hobby or daily activity in this list:" +
-        userHobby +
-        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events.",
+      content: transitionPrompts.stepTwoPrompt(userHobby),
     });
   }
-  function handleNext4() {
+  function handleNext3() {
     setLoading(true);
     setGetAdjacent(true);
     generateAdjacentJobs();
@@ -282,18 +274,6 @@ export default function Chat() {
   function handleURLChange(e) {
     const urlLink = e.target.value;
     setURL(urlLink);
-  }
-
-  function handleAdd() {
-    const task = moreTasks;
-    console.log(task);
-    append({
-      role: "user",
-      content:
-        task +
-        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the prior text into a set of sentences and return them such that each task is numbered. ",
-    });
   }
 
   const toggleConsideration = (word) => {
@@ -464,12 +444,7 @@ export default function Chat() {
     const tasks = part3IWA;
     append({
       role: "user",
-      content:
-        "Given the following list of general tasks and considerations, tasks:" +
-        tasks +
-        "considerations," +
-        considerations +
-        "return only, a numbered list of the top possible jobs suitable for this person, without any descriptions, just the job titles e.g. Frontend Developer.",
+      content: transitionPrompts.adjacentJobsPrompt(tasks, considerations),
     });
   }
 
@@ -477,12 +452,7 @@ export default function Chat() {
     const tasks = part3IWA;
     append({
       role: "user",
-      content:
-        "Given the following list of general tasks and considerations, tasks:" +
-        tasks +
-        "considerations," +
-        considerations +
-        "return only, a numbered list of the top emerging jobs that is suitable for this person, without any descriptions, just the job titles e.g. Data Scientist.",
+      content: transitionPrompts.emergingJobsPrompt(tasks, considerations),
     });
   }
 
@@ -490,12 +460,7 @@ export default function Chat() {
     const tasks = part3IWA;
     append({
       role: "user",
-      content:
-        "Given the following list of general tasks and considerations, tasks:" +
-        tasks +
-        "considerations," +
-        considerations +
-        "return only, a numbered list of the possible gig jobs or internships suitable for this person, without any descriptions, just the job titles e.g. UIUX Intern.",
+      content: transitionPrompts.gigJobsPrompt(tasks, considerations),
     });
   }
   function restartPage() {
@@ -531,28 +496,13 @@ export default function Chat() {
     const userJob = genjob;
     append({
       role: "user",
-      content:
-        "Create a list of tasks for the job," +
-        userJob +
-        "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. ",
+      content: transitionPrompts.comparePrompt(userJob),
     });
   }
 
   function handleCompareGenJob() {
     setCompareLoading(true);
     getTasksFromGenJob();
-  }
-
-  function getTasksFromText() {
-    const userText = text;
-    append({
-      role: "user",
-      content:
-        userText +
-        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. ",
-    });
   }
 
   return (

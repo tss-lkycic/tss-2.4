@@ -8,6 +8,7 @@ import Link from "next/link";
 import CircularProgress from "@mui/material/CircularProgress";
 import html2canvas from "html2canvas";
 import ErrorModal from "../components/ErrorModal";
+import { translatePrompts } from "@/constants/prompts";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
@@ -71,11 +72,11 @@ export default function Chat() {
     setLoading(true);
     let userMessage;
     if (inputType === "text") {
-      userMessage = `${text} Extract and summarize the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
+      userMessage = translatePrompts.textPrompt(text);
     } else if (inputType === "job") {
-      userMessage = `Create a list of tasks for the job: ${job}, even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.`;
+      userMessage = translatePrompts.jobPrompt(job);
     } else if (inputType === "hobby") {
-      userMessage = `For each hobby or daily activity in this list: ${hobbies}, convert them into task sentences, each shorter than 10 words and return them such that each task is numbered.`;
+      userMessage = translatePrompts.hobbyPrompt(hobbies);
     }
     append({
       role: "user",

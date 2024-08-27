@@ -5,10 +5,9 @@ import compare_logo from "/public/compare.svg";
 import CircularProgress from "@mui/material/CircularProgress";
 import Link from "next/link";
 import Image from "next/image";
-import DownloadIcon from "@mui/icons-material/Download";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useEffect, useState, useRef } from "react";
 import ErrorModal from "../components/ErrorModal";
+import { comparePrompts } from "@/constants/prompts";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
@@ -290,10 +289,7 @@ export default function Chat() {
     const userText = text;
     append({
       role: "user",
-      content:
-        userText +
-        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each text to less than 10 words.",
+      content: comparePrompts.textPrompt(userText),
     });
   }
 
@@ -301,11 +297,7 @@ export default function Chat() {
     const userJob = job;
     append({
       role: "user",
-      content:
-        "Create a list of tasks for the job," +
-        userJob +
-        "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
+      content: comparePrompts.jobPrompt(userJob),
     });
   }
 
@@ -313,10 +305,7 @@ export default function Chat() {
     const userHobbies = hobbies;
     append({
       role: "user",
-      content:
-        "For each hobby or daily activity in this list:" +
-        userHobbies +
-        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events. Keep each sentence shorter than 10 words.",
+      content: comparePrompts.hobbyPrompt(userHobbies),
     });
   }
 

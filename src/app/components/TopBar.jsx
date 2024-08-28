@@ -15,18 +15,25 @@ export default function TopBar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const buttonRef = useRef(null);
 
   useEffect(() => {
     setIsMenuOpen(false);
   }, [pathname]);
 
   const toggleMenu = () => {
+    console.log(isMenuOpen);
     setIsMenuOpen((prev) => !prev);
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target)
+      ) {
         setIsMenuOpen(false);
       }
     };
@@ -36,7 +43,7 @@ export default function TopBar() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [menuRef]);
+  }, [menuRef, buttonRef]);
 
   return (
     <div
@@ -80,16 +87,16 @@ export default function TopBar() {
         </div>
       )}
       {pathname == "/" ? null : (
-        <Link href="/">
-          <div className="flex justify-center items-center h-full">
-            <Image src={new_logo} width={40} alt="Logo" className="m-2"></Image>
-            <p className="ml-5 text-xl  text-white tracking-[0.5rem]">
+        <Link href="/" className="flex-grow flex justify-center items-center">
+          <div className="flex items-center">
+            <Image src={new_logo} width={40} alt="Logo" className="m-2" />
+            <p className="md:ml-5 ml-3 md:text-xl text-md text-white tracking-[0.5rem]">
               S T A K
             </p>
           </div>
         </Link>
       )}
-      <div></div>
+      <div className="w-12"></div>
     </div>
   );
 }

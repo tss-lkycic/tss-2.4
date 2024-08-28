@@ -5,10 +5,9 @@ import compare_logo from "/public/compare.svg";
 import CircularProgress from "@mui/material/CircularProgress";
 import Link from "next/link";
 import Image from "next/image";
-import DownloadIcon from "@mui/icons-material/Download";
-import RestartAltIcon from "@mui/icons-material/RestartAlt";
 import { useEffect, useState, useRef } from "react";
 import ErrorModal from "../components/ErrorModal";
+import { comparePrompts } from "@/constants/prompts";
 
 export default function Chat() {
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
@@ -290,10 +289,7 @@ export default function Chat() {
     const userText = text;
     append({
       role: "user",
-      content:
-        userText +
-        // "Summarise the tasks from the text into a set of task sentences. It is very important that each task sentence itself should not have any comma inside. Each task sentence should also begin with a capital letter. Return all task sentences in a single string where each task sentence is separated by a comma. ",
-        "Extract and summarise the tasks from the text into a set of sentences and return them such that each task is numbered. Keep each text to less than 10 words.",
+      content: comparePrompts.textPrompt(userText),
     });
   }
 
@@ -301,11 +297,7 @@ export default function Chat() {
     const userJob = job;
     append({
       role: "user",
-      content:
-        "Create a list of tasks for the job," +
-        userJob +
-        "," +
-        "  even if the job does not exist yet, into a set of sentences and return them such that each task is numbered. Keep each sentence shorter than 10 words.",
+      content: comparePrompts.jobPrompt(userJob),
     });
   }
 
@@ -313,10 +305,7 @@ export default function Chat() {
     const userHobbies = hobbies;
     append({
       role: "user",
-      content:
-        "For each hobby or daily activity in this list:" +
-        userHobbies +
-        ",convert them into tasks sentences and return them such that each task is numbered. e.g. Choreograph dances or performances for events. Keep each sentence shorter than 10 words.",
+      content: comparePrompts.hobbyPrompt(userHobbies),
     });
   }
 
@@ -361,12 +350,13 @@ export default function Chat() {
     return id;
   }
   return (
-    <div className="flex flex-col" id="results">
+    <div className="flex flex-col overflow-x-hidden" id="results">
       <div className="w-screen flex flex-col ">
-        <div className="flex flex-col md:flex-row w-full text-[#555555]">
-          <div className="flex flex-col md:w-1/2  h-full tracking-[0.10rem]">
-            <div className="w-full ">
-              <div className="px-10 pt-5 w-5/6">
+        <div className="flex flex-col w-full text-[#555555]">
+          {/* title and desc section */}
+          <div className="flex flex-row">
+            <div className="md:w-1/2 md:px-10 px-6">
+              <div className="pt-5 w-5/6">
                 <div className="flex flex-row items-center py-2 font-medium">
                   <Image
                     src={compare_logo}
@@ -385,12 +375,18 @@ export default function Chat() {
                   your experiences can align with various industry roles.
                 </p>
               </div>
-              <div className="px-10 pt-5 pb-5  justify-between ">
+            </div>
+            <div className="md:w-1/2"></div>
+          </div>
+          {/* input sections */}
+          <div className="flex md:flex-row flex-col gap-y-4">
+            <div className="flex flex-col md:w-1/2 md:px-10 px-6">
+              <div className="pt-5 pb-5  justify-between ">
                 <button
                   className={` pr-2 tracking-[0.10rem] ${
                     input1 == "text"
-                      ? "text-md text-[#555555]"
-                      : "text-sm text-gray-400"
+                      ? "text-sm text-[#555555]"
+                      : "text-xs text-gray-400"
                   }`}
                   onClick={() => handleSelectInput1("text")}
                 >
@@ -400,19 +396,19 @@ export default function Chat() {
                 <button
                   className={` px-2 tracking-[0.10rem] ${
                     input1 == "job"
-                      ? "text-md text-[#555555]"
-                      : "text-sm text-gray-400"
+                      ? "text-sm text-[#555555]"
+                      : "text-xs text-gray-400"
                   }`}
                   onClick={() => handleSelectInput1("job")}
                 >
                   Input Job
-                </button>{" "}
+                </button>
                 |
                 <button
                   className={` px-2 tracking-[0.10rem] ${
                     input1 == "hobbies"
-                      ? "text-md text-[#555555]"
-                      : "text-sm text-gray-400"
+                      ? "text-sm text-[#555555]"
+                      : "text-xs text-gray-400"
                   }`}
                   onClick={() => handleSelectInput1("hobbies")}
                 >
@@ -421,12 +417,12 @@ export default function Chat() {
               </div>
               {input1 == "text" ? (
                 <>
-                  <p className="px-10 text-xs pb-5">
+                  <p className="text-xs pb-5">
                     Please submit the text you wish to convert into standardized
                     task activities. This can be a job description, course
                     description, or your resume content.
                   </p>
-                  <div className="px-10 text-black w-full flex flex-col">
+                  <div className="text-black w-full flex flex-col">
                     <textarea
                       type="text"
                       value={text1}
@@ -439,11 +435,11 @@ export default function Chat() {
               ) : null}
               {input1 == "job" ? (
                 <>
-                  <p className="px-10 text-xs pb-5">
+                  <p className="text-xs pb-5">
                     Please input a job title to generate a list of its
                     standardized task activities.
                   </p>
-                  <div className="pl-10 pr-5 text-black flex flex-col">
+                  <div className=" text-black flex flex-col">
                     <input
                       type="text"
                       className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
@@ -456,11 +452,11 @@ export default function Chat() {
               ) : null}
               {input1 == "hobbies" ? (
                 <>
-                  <p className="px-10 text-xs pb-5">
+                  <p className="text-xs pb-5">
                     Please input a list of hobbies and/or daily activities to
                     generate a list of its standardized task activities.
                   </p>
-                  <div className="px-10 text-black flex flex-col">
+                  <div className="text-black flex flex-col">
                     <textarea
                       type="text"
                       className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
@@ -472,17 +468,13 @@ export default function Chat() {
                 </>
               ) : null}
             </div>
-          </div>
-
-          <div className="flex flex-col md:w-1/2  h-full tracking-[0.10rem]">
-            <div className="w-full ">
-              <div className="md:h-36 mt-5 md:mt-0"></div>
-              <div className="px-10 pt-5 pb-5  justify-between ">
+            <div className="flex flex-col md:w-1/2 md:px-10 px-6">
+              <div className="pt-5 pb-5  justify-between ">
                 <button
                   className={` pr-2 tracking-[0.10rem] ${
                     input2 == "text"
-                      ? "text-md text-[#555555]"
-                      : "text-sm text-gray-400"
+                      ? "text-sm text-[#555555]"
+                      : "text-xs text-gray-400"
                   }`}
                   onClick={() => handleSelectInput2("text")}
                 >
@@ -492,19 +484,19 @@ export default function Chat() {
                 <button
                   className={` px-2 tracking-[0.10rem] ${
                     input2 == "job"
-                      ? "text-md text-[#555555]"
-                      : "text-sm text-gray-400"
+                      ? "text-sm text-[#555555]"
+                      : "text-xs text-gray-400"
                   }`}
                   onClick={() => handleSelectInput2("job")}
                 >
                   Input Job
-                </button>{" "}
+                </button>
                 |
                 <button
                   className={` px-2 tracking-[0.10rem] ${
                     input2 == "hobbies"
-                      ? "text-md text-[#555555]"
-                      : "text-sm text-gray-400"
+                      ? "text-sm text-[#555555]"
+                      : "text-xs text-gray-400"
                   }`}
                   onClick={() => handleSelectInput2("hobbies")}
                 >
@@ -513,12 +505,12 @@ export default function Chat() {
               </div>
               {input2 == "text" ? (
                 <>
-                  <p className="px-10 text-xs pb-5">
+                  <p className="text-xs pb-5">
                     Please submit the text you wish to convert into standardized
                     task activities. This can be a job description, course
                     description, or your resume content.
                   </p>
-                  <div className="px-10 text-black w-full flex flex-col">
+                  <div className="text-black w-full flex flex-col">
                     <textarea
                       type="text"
                       value={text2}
@@ -531,11 +523,11 @@ export default function Chat() {
               ) : null}
               {input2 == "job" ? (
                 <>
-                  <p className="px-10 text-xs pb-5">
+                  <p className="text-xs pb-5">
                     Please input a job title to generate a list of its
                     standardized task activities.
                   </p>
-                  <div className="pl-10 pr-5 text-black flex flex-col">
+                  <div className="text-black flex flex-col">
                     <input
                       type="text"
                       className=" tracking-[0.10rem] w-full p-2 bg-[#D9D9D9] text-[#555555] rounded-md "
@@ -548,11 +540,11 @@ export default function Chat() {
               ) : null}
               {input2 == "hobbies" ? (
                 <>
-                  <p className="px-10 text-xs pb-5">
+                  <p className="text-xs pb-5">
                     Please input a list of hobbies and/or daily activities to
                     generate a list of its standardized task activities.
                   </p>
-                  <div className="px-10 text-black flex flex-col">
+                  <div className="text-black flex flex-col">
                     <textarea
                       type="text"
                       className="tracking-[0.10rem] w-full h-[15rem] p-2 bg-[#D9D9D9] text-[#555555] rounded-md"
@@ -587,7 +579,7 @@ export default function Chat() {
 
       {completed1 && completed2 && sentRequest ? (
         <div className="flex flex-col pb-10 text-[#555555] items-center md:mx-0 mx-5">
-          <div className="md:w-1/2 max-w-[450px] flex flex-col mt-3 mb-8">
+          <div className="md:w-1/2 md:max-w-[450px] w-full flex flex-col mt-3 mb-8">
             <div className="flex justify-center">
               <p className="w-28 text-center py-2 font-semibold bg-[#54BF94] text-white rounded-lg mb-3">
                 Similar Tasks
@@ -607,7 +599,7 @@ export default function Chat() {
             ))}
           </div>
           <div className="flex md:flex-row flex-col md:items-start items-center gap-8">
-            <div className="md:w-1/2 flex flex-col">
+            <div className="md:w-1/2 w-full flex flex-col">
               <div className="flex justify-center">
                 <p className="w-44 text-center py-2 font-semibold bg-[#A6AED7] text-white rounded-lg mb-3">
                   Input 1 Unique Tasks
@@ -626,7 +618,7 @@ export default function Chat() {
                 </div>
               ))}
             </div>
-            <div className="md:w-1/2 flex flex-col">
+            <div className="md:w-1/2 w-full flex flex-col">
               <div className="flex justify-center">
                 <p className="w-44 text-center py-2 font-semibold bg-[#A6AED7] text-white rounded-lg mb-3">
                   Input 2 Unique Tasks

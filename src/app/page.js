@@ -31,67 +31,87 @@ export default function Page() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-col items-center overflow-scroll">
+      <div className="flex flex-col items-center">
         <div className="w-full flex flex-col mt-[2rem] items-center">
           <Image src={new_logo} width={100} alt="Logo" className="m-2"></Image>
           <h1 className="text-xl tracking-[1rem] mt-2 text-center font-medium">
             STAK
           </h1>
-          {expand ? (
-            <div className="flex flex-col ml-[13rem] text-xl tracking-[1rem] text-start mb-[3rem]">
-              <h1>Skills</h1> <h1 className="ml-[1.5rem]">Tasks</h1>
-              <h1 className="ml-[3rem]">Ai</h1>
-              <h1 className="ml-[4.5rem]">Knowledge</h1>
-              <h1 className="ml-[3rem]">Alignment</h1>
-              <h1 className="ml-[1.5rem]">Transition</h1>
-              <h1>Suite</h1>
-            </div>
-          ) : null}
         </div>
-        <p className="text-lg tracking-[0.15rem] m-2 text-center">
+        <p className="text-lg tracking-[0.15rem] px-6 text-center mt-4">
           Craft Your Career with Task.
         </p>
-        <div className="flex flex-col w-3/4 md:w-1/2 tracking-[0.15rem] ">
-          <p className="text-xs">
+        <div className="flex flex-col md:w-1/2 w-full px-6 tracking-[0.15rem] ">
+          <p className="text-xs mb-4">
             Step forward into a future where your career choices are aligned
             with your distinct skills and aspirations. Translate your daily
             tasks into industry-recognized activities, revealing tailored career
             opportunities that resonate with your professional essence.
           </p>
           {expand ? (
-            <div className="flex flex-col mt-[2rem] track-[0.15rem] gap-[1rem] text-xs">
-              <p className="font-bold mt-[1rem]"> WHY TASKS?</p>
-              <p>
-                Tasks are the specific activities and responsibilities that make
-                up a job, offering a clear picture of the day-to-day work. This
-                approach helps individuals and organizations understand not just
-                the skills needed, but how those skills are applied in real work
-                situations. It allows for better alignment between a person’s
-                capabilities and the job's demands, leading to more effective
-                job matching, career development, and workforce planning.
-              </p>
-              <p className="font-bold mt-[1rem]">
-                WHERE DOES AI COMES INTO STAK
-              </p>
-              <p>
-                STAK uses AI to improve the accuracy of its assessments. We use
-                it to study your portfolio and to build an accurate picture of
-                your capabilities. AI also powers many of our algorithms for
-                planning your career transitions.
-              </p>
-            </div>
+            <>
+              <div className="flex justify-center">
+                <div className="flex flex-col text-xl tracking-[1rem] text-start my-3 md:w-1/2 w-full">
+                  <h1>
+                    <b>S</b>kills
+                  </h1>
+                  <h1 className="ml-[1.5rem]">
+                    <b>T</b>asks
+                  </h1>
+                  <h1 className="ml-[3rem]">
+                    <b>A</b>i
+                  </h1>
+                  <h1 className="ml-[4.5rem]">
+                    <b>K</b>nowledge
+                  </h1>
+                  <h1 className="ml-[3rem]">
+                    <b>A</b>lignment
+                  </h1>
+                  <h1 className="ml-[1.5rem]">
+                    <b>T</b>ransition
+                  </h1>
+                  <h1>
+                    <b>S</b>uite
+                  </h1>
+                </div>
+              </div>
+              <div className="flex flex-col md:mt-4 track-[0.15rem] gap-y-4 mb-6 mt-5 text-xs">
+                <div>
+                  <p className="font-bold"> WHY TASKS?</p>
+                  <p>
+                    Tasks are the specific activities and responsibilities that
+                    make up a job, offering a clear picture of the day-to-day
+                    work. This approach helps individuals and organizations
+                    understand not just the skills needed, but how those skills
+                    are applied in real work situations. It allows for better
+                    alignment between a person’s capabilities and the job's
+                    demands, leading to more effective job matching, career
+                    development, and workforce planning.
+                  </p>
+                </div>
+                <div>
+                  <p className="font-bold">WHERE DOES AI COMES INTO STAK</p>
+                  <p className="">
+                    STAK uses AI to improve the accuracy of its assessments. We
+                    use it to study your portfolio and to build an accurate
+                    picture of your capabilities. AI also powers many of our
+                    algorithms for planning your career transitions.
+                  </p>
+                </div>
+              </div>
+            </>
           ) : null}
           {expand ? (
             <button
               onClick={handleMinimise}
-              className="self-start underline text-xs font-bold mt-[3rem] tracking-[0.15rem]"
+              className="md:self-start self-center underline text-xs font-bold tracking-[0.15rem]"
             >
               RETURN
             </button>
           ) : (
             <button
               onClick={handleExpand}
-              className="self-start underline  text-xs font-bold mt-5 tracking-[0.15rem]"
+              className="md:self-start self-center underline  text-xs font-bold tracking-[0.15rem]"
             >
               FIND OUT MORE
             </button>
@@ -99,58 +119,55 @@ export default function Page() {
         </div>
 
         {/* nav icons */}
-        <div className="sm:w-1/2 flex flex-row mt-5 justify-between">
+        <div className="sm:w-1/2 flex flex-row mt-5 justify-between md:gap-x-2 px-2 md:px-0">
           <Link href="/translate">
-            <div className=" flex flex-col justify-center items-center">
+            <div className=" flex flex-col justify-center items-center h-24 w-24">
               <Image
                 src={translate}
-                width={80}
                 alt="Logo"
-                className="m-2"
+                className="m-2 w-10 md:w-16"
               ></Image>
-              <h1 className="text-xs tracking-[0.15rem]  text-center ">
+              <h1 className="md:text-xs text-[10px] tracking-[0.15rem]  text-center ">
                 Task Translator
               </h1>
             </div>
           </Link>
-          <div className="flex justify-center items-center">
-            <Image src={line} width={30} alt="Logo" className="m-2"></Image>
+          <div className="flex justify-center items-center ">
+            <Image src={line} alt="Logo" className="m-2 w-3 md:w-6"></Image>
           </div>
           <Link href="/compare">
-            <div className=" flex flex-col justify-center items-center">
+            <div className=" flex flex-col justify-center items-center h-24 w-24">
               <Image
                 src={compare_logo}
-                width={70}
                 alt="Logo"
-                className="m-2"
+                className="m-2 w-10 md:w-14"
               ></Image>
-              <h1 className="text-xs tracking-[0.15rem]  text-center ">
+              <h1 className="md:text-xs text-[10px] tracking-[0.15rem] text-center ">
                 Task STAK Compare
               </h1>
             </div>
           </Link>
-          <div className="flex justify-center items-center">
-            <Image src={line} width={30} alt="Logo" className="m-2"></Image>
+          <div className="flex justify-center items-center ">
+            <Image src={line} alt="Logo" className="m-2 w-3 md:w-6"></Image>
           </div>
           <Link href="/transition">
-            <div className=" flex flex-col justify-center items-center">
+            <div className=" flex flex-col justify-center items-center h-24 w-24">
               <Image
                 src={transition}
-                width={70}
                 alt="Logo"
-                className="m-2"
+                className="m-2 w-9 md:w-14"
               ></Image>
-              <h1 className="text-xs tracking-[0.15rem] text-center ">
+              <h1 className="md:text-xs text-[10px] tracking-[0.15rem] text-center ">
                 Transition Generator
               </h1>
-            </div>{" "}
+            </div>
           </Link>
         </div>
 
         {/* landing pages */}
-        <div className="flex flex-col w-full mt-[8rem] gap-[5rem]">
+        <div className="flex flex-col w-full md:mt-20 mt-3 md:gap-y-20 gap-y-10">
           <div className="flex flex-col md:flex-row w-full justify-center items-center">
-            <div className="w-full md:w-1/2 flex flex-row p-10 justify-center items-center">
+            <div className="w-full md:w-1/2 flex flex-row md:p-10 px-6 py-8 justify-center items-center">
               <Image
                 src={translate}
                 alt="translate"
@@ -182,7 +199,7 @@ export default function Page() {
               alt="gif"
               className="w-1/2 md:block hidden"
             ></Image>
-            <div className="w-full md:w-1/2 flex flex-row p-10 justify-center items-center">
+            <div className="w-full md:w-1/2 flex flex-row md:p-10 px-6 py-8 justify-center items-center">
               <Image
                 src={compare_logo}
                 alt="compare"
@@ -210,7 +227,7 @@ export default function Page() {
             ></Image>
           </div>
           <div className="flex flex-col md:flex-row w-full justify-center items-center">
-            <div className="w-full md:w-1/2 flex flex-row p-10 justify-center items-center">
+            <div className="w-full md:w-1/2 flex flex-row md:p-10 px-6 py-8 justify-center items-center">
               <Image
                 src={transition}
                 alt="transition"
@@ -239,7 +256,7 @@ export default function Page() {
             ></Image>
           </div>
         </div>
-        <p className="mt-[12rem] text-xs mb-[6rem]">Copyright © 2024.</p>
+        <p className="text-xs mb-6 mt-20">Copyright © 2024.</p>
       </div>
     </div>
   );

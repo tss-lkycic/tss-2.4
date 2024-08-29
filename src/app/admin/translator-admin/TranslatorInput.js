@@ -1,5 +1,5 @@
 const TranslatorInput = ({
-    selectedInputType, setSelectedInputType, userInput, setUserInput, handleGenerateForActivePrompt
+    selectedInputType, setSelectedInputType, userInput, setUserInput, handleGenerate
 }) => {
 
     const handleSelectChange = (event) => {
@@ -8,6 +8,7 @@ const TranslatorInput = ({
 
     const handleInputChange = (event) => {
         setUserInput(event.target.value);
+        console.log(event.target.value)
       };
 
     return (
@@ -27,7 +28,7 @@ const TranslatorInput = ({
                 style={{ resize: 'none' }}
                 placeholder="Enter your text here..."
             ></textarea>
-            <button className="rounded-md bg-graydark hover:bg-graymd text-graylt w-full p-2" onClick={()=>handleGenerateForActivePrompt()}>Generate</button>
+            <button className="rounded-md bg-graydark hover:bg-graymd text-graylt w-full p-2" onClick={()=>handleGenerate()}>Generate</button>
         </div>
     );
 }

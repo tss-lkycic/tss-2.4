@@ -15,7 +15,7 @@
     "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.15.7",
     "ai": "^2.2.33",
-    "aws-amplify": "^6.4.3",
+    "aws-amplify": "^6.5.3",
     "framer-motion": "^11.0.3",
     "html2canvas": "^1.4.1",
     "install": "^0.13.0",

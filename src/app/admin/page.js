@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { MdLogout } from "react-icons/md";
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
-import TranslatorDashboard from "./translator-admin/TranslatorDashboard";
+import Chat from "./translator-admin/TranslatorDashboard";
 
 const AdminDashboardPage = () => {
     const router = useRouter();
@@ -50,7 +50,7 @@ const AdminDashboardPage = () => {
                 </button>
             </div>
             <div className="p-8 flex-1 min-w-0 box-border">
-                <TranslatorDashboard/>
+                <Chat/>
             </div>
         </div>
     );

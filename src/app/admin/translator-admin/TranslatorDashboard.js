@@ -297,12 +297,24 @@ function ActivePromptOutput({
     }
   }, [startActive])
 
+  function choosePrompt(type) {
+    if (type === "text") {
+      return translatePrompts.textPrompt("");
+    } else if (type === "job") {
+      return translatePrompts.jobPrompt("___");
+    } else {
+      return translatePrompts.hobbyPrompt("");
+    }
+  }
+
   return (
     <div className="mb-4">
       <h3 className="font-bold text-lg mb-3">Active Prompt-In-Use</h3>
       <div className="rounded-md bg-lockgray py-2 px-4 mb-4 flex items-center w-full">
         <FaLock className="mr-2 text-lg" />
-        <p className="truncate overflow-hidden whitespace-nowrap text-sm">{translatePrompts.textPrompt("")}</p>
+        <p className="truncate overflow-hidden whitespace-nowrap text-sm">
+          {choosePrompt(inputType)}
+        </p>
         <FaExpandAlt className=" text-2xl ml-2" />
       </div>
       <div className="max-w-full w-full flex items-start gap-2 h-[30vh] text-xs text-white">
@@ -333,7 +345,16 @@ function PlaygroundPromptOutput({
   const [playgroundOpenAIOutput, setPlaygroundOpenAIOutput] = useState()
   const [IWAs, setIWAs] = useState([]);
   const [user, setUser] = useState(generateID());
-  const [playgroundPrompt, setPlaygroundPrompt] = useState(translatePrompts.textPrompt(""))
+  function choosePrompt(type) {
+    if (type === "text") {
+      return translatePrompts.textPrompt("");
+    } else if (type === "job") {
+      return translatePrompts.jobPrompt("___");
+    } else {
+      return translatePrompts.hobbyPrompt("");
+    }
+  }
+  const [playgroundPrompt, setPlaygroundPrompt] = useState(choosePrompt(inputType))
 
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
     useChat({
@@ -483,7 +504,7 @@ function PlaygroundPromptOutput({
     <div className="mb-4">
       <h3 className="font-bold text-lg mb-3">Prompt Playground</h3>
       <div className="rounded-md bg-graylt py-2 px-4 mb-4 flex items-center w-full">
-        <input value={playgroundPrompt} onChange={(e)=>setPlaygroundPrompt(e.target.value)} className="truncate overflow-hidden whitespace-nowrap text-sm bg-graylt outline-none w-full" placeholder="Insert New Prompt"></input>
+        <input value={playgroundPrompt} onChange={(e) => setPlaygroundPrompt(e.target.value)} className="truncate overflow-hidden whitespace-nowrap text-sm bg-graylt outline-none w-full" placeholder="Insert New Prompt"></input>
         <FaExpandAlt className=" text-2xl ml-2" />
       </div>
       <div className="max-w-full w-full flex items-start gap-2 h-[30vh] text-xs text-white">

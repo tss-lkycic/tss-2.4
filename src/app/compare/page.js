@@ -3,7 +3,6 @@
 import { useChat } from "ai/react";
 import compare_logo from "/public/compare.svg";
 import CircularProgress from "@mui/material/CircularProgress";
-import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import ErrorModal from "../components/ErrorModal";
@@ -66,6 +65,8 @@ export default function Chat() {
   const [loading, setLoading] = useState(false);
   const [callTo1Done, setCallTo1Done] = useState(false);
   const [error, setError] = useState(null);
+
+  const timeoutForIWAs = 120;
 
   function compareInputs() {
     setLoading(true);
@@ -161,65 +162,119 @@ export default function Chat() {
     return () => clearTimeout(timeout);
   }, [response]);
 
-  async function getIWAsForFirstInput(tasklist, userID) {
+  async function getIWAsForFirstInput(
+    tasklist,
+    userID,
+    timeout = timeoutForIWAs
+  ) {
     try {
       let noOfTasksInQueue = Infinity;
-      while (noOfTasksInQueue > 0) {
-        const requestData = { user_id: userID, task: tasklist };
-        const response = await fetch("/api/tasktoIWA", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestData),
-        });
-        const data = await response.json();
-        noOfTasksInQueue = data.no_of_tasks_in_queue;
 
-        if (noOfTasksInQueue > 0) {
-          const iwas = data.body;
-          const iwa_arr = JSON.parse(iwas);
-          processIWA(iwa_arr, 1);
-        } else {
-          console.log("No tasks in queue. Exiting loop for the first input.");
-          const iwas = data.body;
-          const iwa_arr = JSON.parse(iwas);
-          processIWA(iwa_arr);
-          setTimeout(() => setCompleted1(true), 3000);
+      // Create a timeout promise
+      const timeoutPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error("Operation timed out"));
+        }, timeout);
+      });
+
+      // Create the IWA processing promise
+      const iwaProcessingPromise = new Promise(async (resolve) => {
+        while (noOfTasksInQueue > 0) {
+          const requestData = { user_id: userID, task: tasklist };
+          const response = await fetch("/api/tasktoIWA", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData),
+          });
+          const data = await response.json();
+          noOfTasksInQueue = data.no_of_tasks_in_queue;
+
+          if (noOfTasksInQueue > 0) {
+            const iwas = data.body;
+            const iwa_arr = JSON.parse(iwas);
+            processIWA(iwa_arr, 1);
+          } else {
+            console.log("No tasks in queue. Exiting loop for the first input.");
+            const iwas = data.body;
+            const iwa_arr = JSON.parse(iwas);
+            processIWA(iwa_arr);
+            setTimeout(() => setCompleted1(true), 3000);
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 3000));
         }
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      }
+        resolve(); // Resolve the promise when done
+      });
+
+      // Use Promise.race to race the IWA processing and timeout
+      await Promise.race([iwaProcessingPromise, timeoutPromise]);
     } catch (error) {
-      console.error("Error in getIWAsForFirstInput:", error);
+      if (error.message === "Operation timed out") {
+        console.warn(
+          "getIWAsForFirstInput timed out. Returning whatever was processed."
+        );
+      } else {
+        console.error("Error in getIWAsForFirstInput:", error);
+      }
     }
   }
 
-  async function getIWAsForSecondInput(tasklist, userID) {
+  async function getIWAsForSecondInput(
+    tasklist,
+    userID,
+    timeout = timeoutForIWAs
+  ) {
     try {
       let noOfTasksInQueue = Infinity;
-      while (noOfTasksInQueue > 0) {
-        const requestData = { user_id: userID, task: tasklist };
-        const response = await fetch("/api/tasktoIWA", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(requestData),
-        });
-        const data = await response.json();
-        noOfTasksInQueue = data.no_of_tasks_in_queue;
 
-        if (noOfTasksInQueue > 0) {
-          const iwas = data.body;
-          const iwa_arr = JSON.parse(iwas);
-          processIWA(iwa_arr);
-        } else {
-          console.log("No tasks in queue. Exiting loop for the second input.");
-          const iwas = data.body;
-          const iwa_arr = JSON.parse(iwas);
-          processIWA(iwa_arr);
-          setTimeout(() => setCompleted2(true), 3000);
+      // Create a timeout promise
+      const timeoutPromise = new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(new Error("Operation timed out"));
+        }, timeout);
+      });
+
+      // Create the IWA processing promise
+      const iwaProcessingPromise = new Promise(async (resolve) => {
+        while (noOfTasksInQueue > 0) {
+          const requestData = { user_id: userID, task: tasklist };
+          const response = await fetch("/api/tasktoIWA", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData),
+          });
+          const data = await response.json();
+          noOfTasksInQueue = data.no_of_tasks_in_queue;
+
+          if (noOfTasksInQueue > 0) {
+            const iwas = data.body;
+            const iwa_arr = JSON.parse(iwas);
+            processIWA(iwa_arr);
+          } else {
+            console.log(
+              "No tasks in queue. Exiting loop for the second input."
+            );
+            const iwas = data.body;
+            const iwa_arr = JSON.parse(iwas);
+            processIWA(iwa_arr);
+            setTimeout(() => setCompleted2(true), 3000);
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 3000));
         }
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      }
+        resolve(); // Resolve the promise when done
+      });
+
+      // Use Promise.race to race the IWA processing and timeout
+      await Promise.race([iwaProcessingPromise, timeoutPromise]);
     } catch (error) {
-      console.error("Error in getIWAsForSecondInput:", error);
+      if (error.message === "Operation timed out") {
+        console.warn(
+          "getIWAsForSecondInput timed out. Returning whatever was processed."
+        );
+      } else {
+        console.error("Error in getIWAsForSecondInput:", error);
+      }
     }
   }
 

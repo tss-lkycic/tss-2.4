@@ -193,7 +193,7 @@ export default function Chat() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row w-full px-6 md:px-0">
+    <div className="flex flex-col md:flex-row w-full px-6 md:px-0 md:h-screen">
       <div className="flex flex-col w-full md:w-1/2 h-full px-0 md:px-10 tracking-[0.10rem]">
         <div className="w-full">
           <div className="pt-5 md:w-2/3">
@@ -326,7 +326,10 @@ export default function Chat() {
           <div className="bg-[#D9D9D9] bg-opacity-70 flex items-center justify-center z-50 rounded-md h-full w-full absolute"></div>
         ) : null}
 
-        <div className="flex flex-col m-5" id="results">
+        <div
+          className="flex flex-col m-5 h-full md:overflow-y-auto"
+          id="results"
+        >
           {IWAs.map((iwa, index) => (
             <div
               key={index}

@@ -3,14 +3,13 @@
 import { useChat } from "ai/react";
 import transition from "/public/transition.svg";
 import Image from "next/image";
-// import { writeFile } from "fs/promises";
-// import { createReadStream } from "fs";
 import { useEffect, useState, useRef } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CircularProgress from "@mui/material/CircularProgress";
 import html2canvas from "html2canvas";
 import ErrorModal from "../components/ErrorModal";
 import StepTracker from "../components/StepTracker";
+import InfoToolTip from "../components/InfoToolTip";
 import { transitionPrompts } from "@/constants/prompts";
 
 export default function Chat() {
@@ -830,8 +829,9 @@ export default function Chat() {
                   {same} %
                 </p>
                 <div className="flex flex-row">
-                  <p className="">Importance</p>
+                  <p>Importance</p>
                   <KeyboardArrowDownIcon />
+                  <InfoToolTip className="ml-2" />
                 </div>
               </div>
               {sameList.map((j) => (
@@ -850,6 +850,7 @@ export default function Chat() {
                 <div className="flex flex-row">
                   <p className="">Importance</p>
                   <KeyboardArrowDownIcon />
+                  <InfoToolTip className="ml-2" />
                 </div>
               </div>
               <div className="mb-[3rem] w-full">

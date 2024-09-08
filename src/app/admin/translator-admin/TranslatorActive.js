@@ -1,25 +1,24 @@
-"use client";
-import { useEffect, useRef, useState } from "react";
+import { translatePrompts } from "@/constants/prompts";
 import { useChat } from "ai/react";
-import { Alert, ConfigProvider, Input, Spin } from "antd";
-const { TextArea } = Input;
+import { ConfigProvider, Spin } from "antd";
+import { useEffect, useState, useRef } from "react";
+import { FaLock } from "react-icons/fa";
 
-function PlaygroundPromptOutput({
-  startPlayground,
+function ActivePromptOutput({
+  startActive,
   inputType,
   setLoading,
   text,
   job,
   hobbies,
-  setStartPlayground,
+  setStartActive,
   loading,
 }) {
+  const [activeOpenAIOutput, setActiveOpenAIOutput] = useState();
   const [IWAs, setIWAs] = useState([]);
   const [user, setUser] = useState(generateID());
   const [isOpenAIResultLoading, setIsOpenAIResultLoading] = useState(false);
   const [isIWAResultLoading, setIsIWAResultLoading] = useState(false);
-
-  const [playgroundPrompt, setPlaygroundPrompt] = useState("");
 
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
     useChat({
@@ -36,13 +35,14 @@ function PlaygroundPromptOutput({
             .filter((sentence) => sentence.trim() !== "");
 
           console.log("Processed response:", sentences);
-          //setPlaygroundOpenAIOutput(sentences)
+          //setActiveOpenAIOutput(sentences)
           // This is a non-recommended way of using ref instead of state due to some strange rendering logic interfering with the calls to openAI
           if (outputRef.current) {
             outputRef.current.textContent = sentences.join("\r\n");
           }
+          setStartActive(false);
           setIsOpenAIResultLoading(false);
-          setStartPlayground(false);
+
           invokeTask(sentences);
           setTimeout(() => {
             getIWAs(sentences);
@@ -80,16 +80,16 @@ function PlaygroundPromptOutput({
     return id;
   }
   function handleGenerate() {
-    setLoading(true);
     setIsIWAResultLoading(true);
     setIsOpenAIResultLoading(true);
+    setLoading(true);
     let userMessage;
     if (inputType === "text") {
-      userMessage = playgroundPrompt.replace("${text}", text || "");
+      userMessage = translatePrompts.textPrompt(text);
     } else if (inputType === "job") {
-      userMessage = playgroundPrompt.replace("${text}", job || "");
+      userMessage = translatePrompts.jobPrompt(job);
     } else if (inputType === "hobby") {
-      userMessage = playgroundPrompt.replace("${text}", hobby || "");
+      userMessage = translatePrompts.hobbyPrompt(hobbies);
     }
     append({
       role: "user",
@@ -166,28 +166,28 @@ function PlaygroundPromptOutput({
   }
 
   useEffect(() => {
-    if (startPlayground) {
+    if (startActive) {
       handleGenerate();
       outputRef.current.textContent = "";
-
     }
-  }, [startPlayground]);
+  }, [startActive]);
+
+  function choosePrompt(type) {
+    if (type === "text") {
+      return translatePrompts.textPrompt("${text}");
+    } else if (type === "job") {
+      return translatePrompts.jobPrompt("${text}");
+    } else {
+      return translatePrompts.hobbyPrompt("${text}");
+    }
+  }
 
   return (
     <div className="mb-4">
-      <h3 className="font-bold text-lg mb-3">Prompt Playground</h3>
-      <Alert className="mb-4 text-xs" message="Add ${text} at the appropriate place where you want the user input to be inserted." type="info" showIcon />
-      <div className="rounded-md bg-graylt py-2 px-4 mb-4 flex items-center w-full">
-        <TextArea
-          placeholder="Insert Prompt Here"
-          autoSize
-          onChange={(e) => setPlaygroundPrompt(e.target.value)}
-          style={{
-            background: "none",
-            outline: "none",
-            border: "none",
-          }}
-        />
+      <h3 className="font-bold text-lg mb-3">Active Prompt-In-Use</h3>
+      <div className="rounded-md bg-lockgray py-2 px-4 mb-4 flex items-start w-full">
+        <FaLock className="mr-2 text-lg" />
+        <p className=" text-sm">{choosePrompt(inputType)}</p>
       </div>
       <div className="max-w-full w-full flex items-start gap-2 h-[30vh] text-xs text-white">
         <div className="bg-black flex-1 p-4 h-full">
@@ -232,4 +232,4 @@ function PlaygroundPromptOutput({
   );
 }
 
-export default PlaygroundPromptOutput;
+export default ActivePromptOutput;

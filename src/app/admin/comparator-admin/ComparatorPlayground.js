@@ -253,7 +253,6 @@ function PlaygroundPromptOutput({
       console.error("Error in getIWAsForSecondInput:", error);
       setIsIWAResultLoadingB(false);
       setStartPlayground(false);
-
     }
   }
 
@@ -368,6 +367,7 @@ function PlaygroundPromptOutput({
 
   useEffect(() => {
     if (startPlayground) {
+      setOpenAIOutputADone(false);
       setIsOpenAIResultLoadingA(true);
       setIsOpenAIResultLoadingB(true);
       setIsIWAResultLoadingA(true);

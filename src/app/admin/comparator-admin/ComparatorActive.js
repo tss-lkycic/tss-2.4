@@ -337,6 +337,8 @@ function ActivePromptOutput({
 
   useEffect(() => {
     if (startActive) {
+      setOpenAIOutputADone(false);
+
       setIsOpenAIResultLoadingA(true);
       setIsOpenAIResultLoadingB(true);
       setIsIWAResultLoadingA(true);

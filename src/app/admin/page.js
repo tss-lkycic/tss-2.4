@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import TranslatorDashboard from "./translator-admin/TranslatorDashboard";
 import ComparatorDashboard from "./comparator-admin/ComparatorDashboard";
+import TransitionDashboard from "./transition-admin/TransitionDashboard";
 
 const AdminDashboardPage = () => {
   const router = useRouter();
@@ -33,7 +34,7 @@ const AdminDashboardPage = () => {
   return (
     <div className="flex">
       {/* Sidebar */}
-      <div className="flex-none bg-graylt w-[15vw] flex flex-col justify-between">
+      <div className="flex-none bg-graylt w-[15vw] flex flex-col justify-between min-h-screen">
         <div className="flex flex-col w-full text-xs">
           <button
             onClick={() => changeTool("translate")}
@@ -71,6 +72,8 @@ const AdminDashboardPage = () => {
       <div className="flex-1 p-8 box-border overflow-y-auto">
         {selectedTool === "translate" && <TranslatorDashboard />}
         {selectedTool === "compare" && <ComparatorDashboard />}
+        {selectedTool === "transition" && <TransitionDashboard />}
+
       </div>
     </div>
   );

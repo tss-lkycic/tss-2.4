@@ -3,40 +3,37 @@
 import { useEffect, useState } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 import ErrorModal from "../../../components/ErrorModal";
-import { Alert, ConfigProvider } from "antd";
+import { Alert, ConfigProvider, Tabs } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import ActivePromptOutput from "../common/Active";
 import PlaygroundPromptOutput from "../common/Playground";
+import ActivePromptOutput from "../common/Active";
 import { transitionPrompts } from "@/constants/prompts";
 
-export default function Step1View() {
+export default function Step2View() {
   const [inputType, setInputType] = useState("text");
-  const [job, setJob] = useState("");
-  const [resume, setResume] = useState("");
+  const [hobbies, setHobbies] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [startActive, setStartActive] = useState(false);
   const [startPlayground, setStartPlayground] = useState(false);
 
-  const [activePrompt, setActivePrompt] = useState(transitionPrompts.stepOnePrompt(job, resume))
+  const [activePrompt, setActivePrompt] = useState(transitionPrompts.stepTwoPrompt(hobbies))
   useEffect(() => {
-    setActivePrompt(transitionPrompts.stepOnePrompt(job, resume));
-  }, [job, resume]); 
+    setActivePrompt(transitionPrompts.stepTwoPrompt(hobbies));
+  }, [hobbies]); 
 
   const [tokenMap, setTokenMap] = useState({});
   useEffect(() => {
     setTokenMap({
-      job: job,          
-      resume: resume,     
+      hobbies: hobbies  
     });
-  }, [job, resume]); 
-  
+  }, [hobbies]); 
   return (
     <div className="flex items-start gap-10 max-w-full box-border">
       <div className="w-[30%] flex-none">
         <h3 className="font-bold text-md mb-3">
-          Please list down your current and previous jobs. You may also paste
-          your text CV.
+          List down your hobbies and leisure activities that you wish to
+          translate to your potential career paths.
         </h3>
         <ConfigProvider
           theme={{
@@ -48,28 +45,18 @@ export default function Step1View() {
           }}
         >
           <TextArea
-            placeholder="E.g. Frontend Developer, Project Manager..."
-            autoSize
-            onChange={(e) => setJob(e.target.value)}
+            placeholder="E.g. Dancing, Cooking, Arts & Crafts..."
+            autoSize={{
+              minRows: 10,
+              maxRows: 10,
+            }}
+            onChange={(e) => setHobbies(e.target.value)}
             style={{
               background: "#D9D9D9",
               outline: "none",
               border: "none",
               marginBottom: "18px",
               fontSize: "15px",
-            }}
-          />
-          <TextArea
-            placeholder="Paste your resume/CV here"
-            autoSize={{
-              minRows: 14,
-              maxRows: 14,
-            }}
-            onChange={(e) => setJob(e.target.value)}
-            style={{
-              background: "#D9D9D9",
-              outline: "none",
-              border: "none",
             }}
           />
         </ConfigProvider>
@@ -101,39 +88,32 @@ export default function Step1View() {
             startActive,
             inputType,
             setLoading,
-            resume,
-            job,
             setStartActive,
             loading,
           }}
           activePrompt={activePrompt}
-          activePromptPreview={transitionPrompts.stepOnePrompt(
-            "${job}",
-            "${resume}"
-          )}
+          activePromptPreview={transitionPrompts.stepTwoPrompt("${hobbies}")}
         />
         <PlaygroundPromptOutput
-          {...{
-            startPlayground,
-            inputType,
-            setLoading,
-            resume,
-            job,
-            setStartPlayground,
-            loading,
-          }}
-          tokenMap={tokenMap}
-          instructions={
-            <Alert
-              className="mb-4 text-xs"
-              message="Add ${job} and ${resume} at the appropriate place where you want the user job and resume inputs respectively to be inserted."
-              type="info"
-              showIcon
-            />
-          }
-        />
+        {...{
+          startPlayground,
+          inputType,
+          setLoading,
+          setStartPlayground,
+          loading,
+        }}
+        tokenMap={tokenMap}
+        instructions={
+          <Alert
+            className="mb-4 text-xs"
+            message="Add ${hobbies} at the appropriate place where you want the user hobbies inputs respectively to be inserted."
+            type="info"
+            showIcon
+          />
+        }
+      />
       </div>
-
+      
       {error && <ErrorModal message={error} onClose={() => setError(null)} />}
     </div>
   );

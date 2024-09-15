@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import CircularProgress from "@mui/material/CircularProgress";
-import html2canvas from "html2canvas";
+import { useState } from "react";
 import ErrorModal from "../../components/ErrorModal";
 import { ConfigProvider, Tabs } from "antd";
 import Step1View from "./step1/Step1View";
+import Step2View from "./step2/Step2View";
+import Step3View from "./step3/Step3View";
 
 export default function TransitionDashboard() {
   const [inputType, setInputType] = useState("text");
@@ -67,6 +67,9 @@ export default function TransitionDashboard() {
         />
       </ConfigProvider>
       {(step === 1) && <Step1View step={step}/>}
+      {(step === 2) && <Step2View step={step}/>}
+      {(step === 3) && <Step3View step={step}/>}
+
     </div>
   );
 }

@@ -147,7 +147,6 @@ export default function Chat() {
         // If response is stable and not empty, call fetchData
         console.log("This is the latest response:", response);
         if (getAdjacent === true) {
-          console.log("helloooooo");
           setAdjacentJobs(response);
           setGetAdjacent(false);
           setGetEmerging(true);

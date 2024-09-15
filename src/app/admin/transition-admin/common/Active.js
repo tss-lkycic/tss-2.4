@@ -1,24 +1,22 @@
-"use client";
-import { useEffect, useRef, useState } from "react";
 import { useChat } from "ai/react";
-import { Alert, ConfigProvider, Input, Spin } from "antd";
-const { TextArea } = Input;
+import { ConfigProvider, Spin } from "antd";
+import { useEffect, useState, useRef } from "react";
+import { FaLock } from "react-icons/fa";
 
-function PlaygroundPromptOutput({
-  startPlayground,
+function ActivePromptOutput({
+  startActive,
   inputType,
   setLoading,
-  job,
-  resume,
-  setStartPlayground,
+  setStartActive,
   loading,
+  activePrompt,
+  activePromptPreview,
 }) {
+  const [activeOpenAIOutput, setActiveOpenAIOutput] = useState("");
   const [IWAs, setIWAs] = useState([]);
   const [user, setUser] = useState(generateID());
   const [isOpenAIResultLoading, setIsOpenAIResultLoading] = useState(false);
   const [isIWAResultLoading, setIsIWAResultLoading] = useState(false);
-
-  const [playgroundPrompt, setPlaygroundPrompt] = useState("");
 
   const { messages, append, input, handleInputChange, handleSubmit, setInput } =
     useChat({
@@ -35,13 +33,11 @@ function PlaygroundPromptOutput({
             .filter((sentence) => sentence.trim() !== "");
 
           console.log("Processed response:", sentences);
-          //setPlaygroundOpenAIOutput(sentences)
-          // This is a non-recommended way of using ref instead of state due to some strange rendering logic interfering with the calls to openAI
-          if (outputRef.current) {
-            outputRef.current.textContent = sentences.join("\r\n");
-          }
+          setActiveOpenAIOutput(sentences.join("\r\n")); // Set the OpenAI output using useState
+
+          setStartActive(false);
           setIsOpenAIResultLoading(false);
-          setStartPlayground(false);
+
           invokeTask(sentences);
           setTimeout(() => {
             getIWAs(sentences);
@@ -64,8 +60,6 @@ function PlaygroundPromptOutput({
       },
     });
 
-  const outputRef = useRef(null);
-
   function generateID() {
     let id = "";
     const characters = "0123456789";
@@ -78,34 +72,33 @@ function PlaygroundPromptOutput({
 
     return id;
   }
+
   function handleGenerate() {
-    setLoading(true);
     setIsIWAResultLoading(true);
     setIsOpenAIResultLoading(true);
+    setLoading(true);
     let userMessage;
-    userMessage = playgroundPrompt.replace("${job}", job || "").replace("${resume}", resume || "");    
-    append({
-      role: "user",
-      content: userMessage,
-    });
+    (userMessage = activePrompt),
+      append({
+        role: "user",
+        content: userMessage,
+      });
   }
 
   async function invokeTask(tasklist) {
     try {
-      // Data to send in the request body
       const requestData = {
         user_id: user,
         task: tasklist,
       };
       console.log(requestData);
-      // Call the first API with data in the request body
+
       const response1 = await fetch("/api/invokeTask", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(requestData),
-        // body: requestData,
       });
       const data1 = await response1.json();
       console.log("Response from first API:", data1);
@@ -116,7 +109,8 @@ function PlaygroundPromptOutput({
 
   async function getIWAs(tasklist) {
     try {
-      let noOfTasksInQueue = Infinity; // Set initially to a large number
+      let noOfTasksInQueue = Infinity;
+
       while (noOfTasksInQueue > 0) {
         const requestData = {
           user_id: user,
@@ -134,7 +128,7 @@ function PlaygroundPromptOutput({
         const data = await response.json();
         console.log("Response from API:", data);
 
-        noOfTasksInQueue = data.no_of_tasks_in_queue; // Update the variable
+        noOfTasksInQueue = data.no_of_tasks_in_queue;
 
         if (noOfTasksInQueue > 0) {
           const iwas = data.body;
@@ -142,7 +136,6 @@ function PlaygroundPromptOutput({
           setIWAs(iwa_arr);
         } else {
           console.log("No tasks in queue. Exiting loop.");
-          console.log("process remainder");
           const iwas = data.body;
           const iwa_arr = JSON.parse(iwas);
           setIWAs(iwa_arr);
@@ -150,8 +143,7 @@ function PlaygroundPromptOutput({
           setIsIWAResultLoading(false);
         }
 
-        // Optional: Add a delay between API calls to avoid flooding the server
-        await new Promise((resolve) => setTimeout(resolve, 3000)); // 1 second delay
+        await new Promise((resolve) => setTimeout(resolve, 3000));
       }
     } catch (error) {
       console.error("Error:", error);
@@ -159,28 +151,18 @@ function PlaygroundPromptOutput({
   }
 
   useEffect(() => {
-    if (startPlayground) {
+    if (startActive) {
       handleGenerate();
-      outputRef.current.textContent = "";
-
+      setActiveOpenAIOutput(""); // Clear output when starting a new prompt
     }
-  }, [startPlayground]);
+  }, [startActive]);
 
   return (
     <div className="mb-4">
-      <h3 className="font-bold text-lg mb-3">Prompt Playground</h3>
-      <Alert className="mb-4 text-xs" message="Add ${job} and ${resume} at the appropriate place where you want the user job and resume inputs respectively to be inserted." type="info" showIcon />
-      <div className="rounded-md bg-graylt py-2 px-4 mb-4 flex items-center w-full">
-        <TextArea
-          placeholder="Insert Prompt Here"
-          autoSize
-          onChange={(e) => setPlaygroundPrompt(e.target.value)}
-          style={{
-            background: "none",
-            outline: "none",
-            border: "none",
-          }}
-        />
+      <h3 className="font-bold text-base mb-3">Active Prompt-In-Use</h3>
+      <div className="rounded-md bg-lockgray py-2 px-4 mb-4 flex items-start w-full">
+        <FaLock className="mr-2 text-lg" />
+        <p className=" text-sm">{activePromptPreview}</p>
       </div>
       <div className="max-w-full w-full flex items-start gap-2 h-[30vh] text-xs text-white">
         <div className="bg-black flex-1 p-4 h-full">
@@ -192,37 +174,34 @@ function PlaygroundPromptOutput({
           ) : (
             ""
           )}
-          <p
-            ref={outputRef}
-            className="h-4/5 py-2 overflow-y-auto whitespace-pre-wrap "
-          ></p>
+          <p className="h-4/5 py-2 overflow-y-auto whitespace-pre-wrap ">
+            {activeOpenAIOutput}
+          </p>
         </div>
         <div className="bg-black flex-1 p-4 h-full">
           <p className="font-semibold text-white text-xs mb-2">IWA Output</p>
-          <div className="h-4/5 py-2 overflow-y-auto whitespace-pre-wrap">
-            {isIWAResultLoading ? (
-              <ConfigProvider theme={{ token: { colorPrimary: "#fff" } }}>
-                <Spin />
-              </ConfigProvider>
-            ) : (
-              <div className="h-4/5 py-2 overflow-y-auto whitespace-pre-wrap">
-                {!loading ? (
-                  IWAs.map((iwa, index) => (
-                    <div key={index}>
-                      {iwa}
-                      <br />
-                    </div>
-                  ))
-                ) : (
-                  <></>
-                )}
-              </div>
-            )}
-          </div>
+          {isIWAResultLoading ? (
+            <ConfigProvider theme={{ token: { colorPrimary: "#fff" } }}>
+              <Spin />
+            </ConfigProvider>
+          ) : (
+            <div className="h-4/5 py-2 overflow-y-auto whitespace-pre-wrap">
+              {!loading ? (
+                IWAs.map((iwa, index) => (
+                  <div key={index}>
+                    {iwa}
+                    <br />
+                  </div>
+                ))
+              ) : (
+                <></>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export default PlaygroundPromptOutput;
+export default ActivePromptOutput;

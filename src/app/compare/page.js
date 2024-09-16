@@ -49,7 +49,6 @@ export default function Chat() {
   const [hobbies2, setHobbies2] = useState("");
   const [hobbies1, setHobbies1] = useState("");
   const [response, setResponse] = useState([]);
-  const [IWAs, setIWAs] = useState([]);
   const [IWAs1, setIWAs1] = useState([]);
   const [IWAs2, setIWAs2] = useState([]);
   const [similarTasks, setSimilarTasks] = useState([]);

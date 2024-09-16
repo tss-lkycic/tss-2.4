@@ -1,6 +1,8 @@
 "use client";
 
 import { useChat } from "ai/react";
+import logo from "/public/logo.svg";
+import new_logo from "/public/new_logo.svg";
 import translate from "/public/translate.svg";
 import Image from "next/image";
 import { useEffect, useState } from "react";
